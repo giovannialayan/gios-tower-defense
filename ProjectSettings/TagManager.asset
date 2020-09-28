@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - grid
+  - tilemap
+  - bullet
+  - enemy
+  - currency
+  - structure
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - towerRange
+  - towers
+  - enemies
+  - bullets
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: towers
+    uniqueID: 3426417661
+    locked: 0
+  - name: enemies
+    uniqueID: 235188957
+    locked: 0
+  - name: bullets
+    uniqueID: 204588841
+    locked: 0
