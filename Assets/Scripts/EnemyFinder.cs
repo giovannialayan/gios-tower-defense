@@ -37,7 +37,8 @@ public class EnemyFinder : MonoBehaviour
     //this is meant to be used to target the enemy closest to the end.
     //it works until a tower has a constant stream of enemies around it,
     //then it stops attacking, resetting the attackspeed when a new target
-    //is selected didnt fix it \__(-_-)__/
+    //is selected didnt fix it 
+    //fix this later because this must be a mechanic
 
     //void Update()
     //{

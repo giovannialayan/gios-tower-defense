@@ -1,0 +1,2 @@
+randommap=True;
+musicvolume=0;

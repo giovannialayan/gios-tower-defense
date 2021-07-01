@@ -87,7 +87,7 @@ public class EnemyAI : MonoBehaviour
         set { path = value; }
     }
 
-    //change pos to center of tile
+    //change pos to center of tile (fix later to add offset of tilemap)
     private Vector3 PathPosToTileCenter(Vector3Int pathTile)
     {
         return new Vector3(pathTile.x + .5f, pathTile.y + .5f);

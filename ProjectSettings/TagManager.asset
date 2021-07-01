@@ -10,6 +10,11 @@ TagManager:
   - enemy
   - currency
   - structure
+  - base
+  - spawner
+  - UICamera
+  - healthBar
+  - money
   layers:
   - Default
   - TransparentFX
@@ -23,8 +28,8 @@ TagManager:
   - towers
   - enemies
   - bullets
-  - 
-  - 
+  - gameUI
+  - shopUI
   - 
   - 
   - 
@@ -55,4 +60,10 @@ TagManager:
     locked: 0
   - name: bullets
     uniqueID: 204588841
+    locked: 0
+  - name: gameUI
+    uniqueID: 1664445305
+    locked: 0
+  - name: onTopUI
+    uniqueID: 1825523169
     locked: 0

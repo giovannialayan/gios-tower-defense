@@ -1,0 +1,86 @@
+chaos > order
+order > chaos
+fire > nature
+water > fire
+earth > lightning
+lightning > water
+whimsical > earth
+nature > whimsical
+
+damaging towers base dps = 1
+support towers base dps = .5
+
+attack speed tower (default lightning)
+- base atk = 1
+- base atkspd = 1
+- base range = 5
+- mod atk = .1
+- mod atkspd = .5
+- mod range = 1
+
+burst tower (default fire)
+- base atk = 5
+- base atkspd = 5
+- base range = 5
+- mod atk = 2
+- mod atkspd = .9
+- mod range = 1
+
+artillery tower (default whimsical)
+- base atk = 2
+- base atkspd = 3
+- base range = 10
+- mod atk = 1
+- mod atkspd = .7
+- mod range = 3
+- can target up to range / 3 enemies every time it shoots, firing a shot at each enemy
+- (dps = 1 when attacking 2 enemies)
+
+pulse tower (default order)
+- base atk = 2
+- base atkspd = 2
+- base range = 5
+- mod atk = .5
+- mod atkspd = .7
+- mod range = .5
+- attack is a pulse that hits all enemies in range, disperses atk evenly between all enemies
+
+crowd control tower (default nature)
+- base atk = 1.5
+- base atkspd = 3
+- base range = 5
+- mod atk = .25
+- mod atkspd = .8
+- mod range = 1
+- every three attacks stuns the enemy hit for atk/3 seconds
+
+slow tower (default earth)
+- base atk = 1
+- base atkspd = 2
+- base range = 5
+- mod atk = .5
+- mod atkspd = .8
+- mod range = 1
+- attack slows enemy hit by enemy.spd * ((1 / enemy.maxhp) * (enemy.maxhp - atk)) for 2 seconds
+- y - y1 = (y2 - y1) / (x2 - x1) * (x1 - x)
+- y1 = modMin , y2 = modMax , x1 = bigMin , x2 = bigMax , x = input
+- note that max slow occurs when the enemy is one shot, when attack = max health, so i dont have to worry about attack > max health because the enemy will be dead
+
+shred tower (default chaos):
+- base atk = 0
+- base atkspd = 0
+- base range = 0
+- mod atk = 0
+- mod atkspd = 0
+- mod range = 1
+- gives adjacent towers (enemy max health * .1) on their attack
+
+amplifier tower (default water)
+- base atk = 0
+- base atkspd = 0
+- base range = 3
+- mod atk = 0
+- mod atkspd = 0
+- mod range = 1
+- gives towers in range extra atk and atkspd equal to target.atk += target.atk * .1 and target.atkspd -= target.atkspd * .1
+- gives towers in range this element in addition to their own

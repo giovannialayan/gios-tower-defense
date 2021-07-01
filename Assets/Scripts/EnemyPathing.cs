@@ -143,7 +143,7 @@ public class EnemyPathing : MonoBehaviour
 
             if (currentNode == pathGraph.EndNode)
             {
-                //change PathNodes to Vector2Ints
+                //change PathNodes to Vector3Ints
                 List<Vector3Int> vector3Path = new List<Vector3Int>();
 
                 do

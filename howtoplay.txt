@@ -1,0 +1,59 @@
+page 1
+    - tower button
+        - the tower shop allows you to buy towers
+        - click this button to buy the tower shown on the button
+        - use the drop down to change the selected tower
+
+    - tower placement
+        - click on a wall tile to place a tower
+        - towers can only be placed on wall tiles
+
+page 2
+    - inventory
+        - the inventory holds element orbs
+        - you can buy element orbs by clicking on the drop down and clicking the one you want to buy
+
+    - element orbs
+        - you can place an element orb on a tower on the field to give it a secondary element that will also be applied on its attacks
+        - a tower can only have one secondary element and will always keep its original element
+
+page 3
+    - spawner & enemies
+        - the spawner is where enemies will spawn from
+        - enemies will move toward your base and if they reach it you will take damage
+
+    - waves
+        - when a wave block reaches the end of its journey it is destroyed and enemies will begin to spawn from it
+        - you can hover over a wave block to view information about the enemies in it
+
+page 4
+    - base
+        - enemies will attack your base, when your base health reaches 0 you lose
+        - your base's health periodically increases as you defeat more and more waves
+
+    - money (later for world building call the currency arry)
+        - this shows how much money you have
+        - you gain 1% of your maximum money per second
+        - after your current amount of money exceeds your maximum amount of money the cap will double
+
+page 5
+    - type chart
+        -chaos > order
+        -order > chaos
+        -fire > nature
+        -water > fire
+        -earth > lightning
+        -lightning > water
+        -whimsical > earth
+        -nature > whimsical
+
+page 6
+    - tower chart
+        -fire tower: high damage, slow attack speed
+        -lightning tower: low damage, high attack speed
+        -whimsical tower: high range, can target multiple enemies at once
+        -order tower: hits all enemies in range, evenly disperses damage among enemies hits
+        -nature tower: every third attack stuns the enemy hit by the last attack
+        -earth tower: slows enemy hit by its attack
+        -water tower: increases damage, attack speed, and range of all towers in range
+        -chaos tower: adjacent towers will deal 10% of the enemy's max health on each attack

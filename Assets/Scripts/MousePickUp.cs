@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 public class MousePickUp : MonoBehaviour
 {
     //snap to this value
-    private float snapVal = .5f;
+    private float snapVal = 1f;
 
     //object transform
     private Transform objTransform;
@@ -25,6 +25,9 @@ public class MousePickUp : MonoBehaviour
 
     //bool for if a structure is under this one
     private bool aboveStructure;
+
+    //gamemanager
+    public GameManager gamemanager { get; set; }
 
     // Start is called before the first frame update
     void Start()
@@ -45,7 +48,7 @@ public class MousePickUp : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!itemPlaced)
+        if (!itemPlaced && !gamemanager.IsPaused)
         {
             //put the object on the mouse
             Vector3 mousePos = Input.mousePosition;

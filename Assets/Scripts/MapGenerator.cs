@@ -66,26 +66,6 @@ public class MapGenerator : MonoBehaviour
 
     }
 
-    private Vector3Int[,] GeneratePath(Bounds bounds) //implement maze generation algorithm to generate map shape
-    {
-        //https://www.gamasutra.com/blogs/HermanTulleken/20161005/282629/Algorithms_for_making_more_interesting_mazes.php
-        //make a class for nodes where each node is either a wall or a room
-        //paths contain a list of adjacent walls and walls contain a list of adjacent rooms
-        //mark all walls as closed
-        //select a random room, add it to the final path
-        //add that room's walls to the full wall list
-        //while the wall list is not empty:
-        //  select a wall randomly
-        //  get rooms adjacent to that wall
-        //  if there are two rooms and one isnt in the final path:
-        //    mark the wall as open
-        //    add the room to the final path
-        //    add that room's adjacent walls to the wall list
-        //  remove the wall that was marked open from the wall list
-
-        return new Vector3Int[1, 1];
-    }
-
     //set tiles in tilemap to match the generated path
     private void PlaceTiles(Tilemap map, Vector3Int[,] tilePositions)
     {
@@ -116,7 +96,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    //replace all tiles with walls
+    //replace all tiles with fillTile and delete everything
     private void ResetMap(Tilemap map, TileBase fillTile)
     {
         List<Vector3Int> allTiles = new List<Vector3Int>();
@@ -169,65 +149,66 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    //consider using schemes to enhance maze generation
     //replace all tiles with that of a scheme
-    private void SetMazeScheme(Tilemap map, string[,] scheme)
-    {
-        List<Vector3Int> allTiles = new List<Vector3Int>();
-        int tileCount = 0;
+    // private void SetMazeScheme(Tilemap map, string[,] scheme)
+    // {
+    //     List<Vector3Int> allTiles = new List<Vector3Int>();
+    //     int tileCount = 0;
 
-        for (int i = 0; i < tilemap.localBounds.size.x; i++)
-        {
-            for (int j = 0; j < tilemap.localBounds.size.y; j++)
-            {
-                allTiles.Add(ArrayToTilePos(i, j, map));
-            }
-        }
+    //     for (int i = 0; i < tilemap.localBounds.size.x; i++)
+    //     {
+    //         for (int j = 0; j < tilemap.localBounds.size.y; j++)
+    //         {
+    //             allTiles.Add(ArrayToTilePos(i, j, map));
+    //         }
+    //     }
 
-        for (int i = 0; i < scheme.GetLength(0); i++)
-        {
-            for (int j = 0; j < scheme.GetLength(1); j++)
-            {
-                switch (scheme[i, j])
-                {
-                    case "wall":
-                        map.SetTile(allTiles[tileCount], wallTile);
-                        break;
+    //     for (int i = 0; i < scheme.GetLength(0); i++)
+    //     {
+    //         for (int j = 0; j < scheme.GetLength(1); j++)
+    //         {
+    //             switch (scheme[i, j])
+    //             {
+    //                 case "wall":
+    //                     map.SetTile(allTiles[tileCount], wallTile);
+    //                     break;
 
-                    case "path":
-                        map.SetTile(allTiles[tileCount], pathTile);
-                        break;
-                }
+    //                 case "path":
+    //                     map.SetTile(allTiles[tileCount], pathTile);
+    //                     break;
+    //             }
 
-                tileCount++;
-            }
-        }
-    }
+    //             tileCount++;
+    //         }
+    //     }
+    // }
 
-    private string[,] InitializeScheme(Bounds bounds)
-    {
-        string[,] scheme = new string[(int)tilemap.localBounds.size.x, (int)tilemap.localBounds.size.y];
+    // private string[,] InitializeScheme(Bounds bounds)
+    // {
+    //     string[,] scheme = new string[(int)tilemap.localBounds.size.x, (int)tilemap.localBounds.size.y];
 
-        for (int i = 0; i < bounds.size.x; i++)
-        {
-            for (int j = 0; j < bounds.size.y; j++)
-            {
-                //if (i == 0 || j == 0 || i == bounds.size.x - 1 || j == bounds.size.y - 1)
-                //{
-                //    scheme[i, j] = "wall";
-                //}
-                if (i % 2 == 0 || j % 2 == 0)
-                {
-                    scheme[i, j] = "wall";
-                }
-                else
-                {
-                    scheme[i, j] = "path";
-                }
-            }
-        }
+    //     for (int i = 0; i < bounds.size.x; i++)
+    //     {
+    //         for (int j = 0; j < bounds.size.y; j++)
+    //         {
+    //             //if (i == 0 || j == 0 || i == bounds.size.x - 1 || j == bounds.size.y - 1)
+    //             //{
+    //             //    scheme[i, j] = "wall";
+    //             //}
+    //             if (i % 2 == 0 || j % 2 == 0)
+    //             {
+    //                 scheme[i, j] = "wall";
+    //             }
+    //             else
+    //             {
+    //                 scheme[i, j] = "path";
+    //             }
+    //         }
+    //     }
 
-        return scheme;
-    }
+    //     return scheme;
+    // }
 
     //change 2d array coords to align to tilemap grid
     private Vector3Int ArrayToTilePos(int x, int y, Tilemap map)
@@ -236,6 +217,7 @@ public class MapGenerator : MonoBehaviour
     }
 
     //update loading bar
+    //learn how to use async to do this
     /*
     //private void UpdateLoadingBar(float current, float max)
     //{
