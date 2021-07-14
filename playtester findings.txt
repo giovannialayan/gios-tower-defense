@@ -1,0 +1,19 @@
+quality of life problems
+
+- order tower attack animation "flashbangs the whole screen" when the range gets really big
+
+- inventory background is below tower range
+
+
+minor bugs
+
+- tower cost scientific notation number after e shows a few lower than it really is
+
+
+major bugs
+
+- element shop flickering
+    - unable to reproduce
+
+- element shop buying mutiple times in one button click
+    - unable to reproduce

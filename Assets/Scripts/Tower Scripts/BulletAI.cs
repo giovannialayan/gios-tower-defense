@@ -16,17 +16,29 @@ public class BulletAI : MonoBehaviour
     //status effect to apply
     private int statusEffect = 0;
 
+    //reference to tower that spawned it
+    public Transform tower { get; set; }
+
+    private GameManager gamemanager;
+
     // Start is called before the first frame update
     void Start()
     {
         bulletSpeed = 10 * Time.fixedDeltaTime;
 
         bulletDamage = 2f;
+
+        gamemanager = FindObjectOfType<GameManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (gamemanager.IsPaused)
+        {
+            return;
+        }
+
         transform.position = Vector3.MoveTowards(transform.position, transform.parent.position, bulletSpeed);
     }
 

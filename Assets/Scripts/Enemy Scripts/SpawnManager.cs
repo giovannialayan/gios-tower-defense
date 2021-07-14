@@ -4,7 +4,15 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
+    //enemy prefabs
     public GameObject enemyObj;
+    public GameObject knightObj;
+    public GameObject monkObj;
+    public GameObject paladinObj;
+    public GameObject assassinObj;
+    public GameObject succubusObj;
+    public GameObject armorerObj;
+    public GameObject warlockObj;
 
     //spawning variables
     //private bool spawnContinuously;
@@ -12,20 +20,24 @@ public class SpawnManager : MonoBehaviour
     private float timeSinceSpawn;
     //private float timeSinceStartSpawn;
     private int numToSpawn;
-    private Wave currentWave;
+    private Queue<Wave> currentWave;
     private List<Vector3Int> thePath;
 
     //gamemanager
-    public GameManager gameManager;
+    private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = FindObjectOfType<GameManager>();
+
         //spawnContinuously = false;
         spawnSpeed = 1;
         timeSinceSpawn = spawnSpeed;
         //timeSinceStartSpawn = 0;
         thePath = null;
+
+        currentWave = new Queue<Wave>();
     }
 
     // Update is called once per frame
@@ -36,28 +48,22 @@ public class SpawnManager : MonoBehaviour
             return;
         }
 
-        //start spawning continuously
-        //if (Input.GetKeyDown(KeyCode.E) && !spawnContinuously && thePath != null)
-        //{
-        //    spawnContinuously = true;
-        //    timeSinceStartSpawn = 0;
-        //    timeSinceSpawn = spawnSpeed;
-        //}
-        //else if(Input.GetKeyDown(KeyCode.E) && spawnContinuously && thePath != null)
-        //{
-        //    spawnContinuously = false;
-        //}
-
         //spawn enemies
         //Debug.Log(numToSpawn + " , " + thePath);
-        if (numToSpawn > 0 && thePath != null)
+        if (currentWave.Count > 0 && thePath != null)
         {
             //Debug.Log("things are happening, i swear");
             if (timeSinceSpawn >= spawnSpeed)
             {
                 SpawnEnemy();
                 timeSinceSpawn = 0;
-                numToSpawn--;
+                numToSpawn++;
+
+                if (numToSpawn == currentWave.Peek().enemies)
+                {
+                    currentWave.Dequeue();
+                    numToSpawn = 0;
+                }
             }
 
             timeSinceSpawn += Time.fixedDeltaTime;
@@ -68,14 +74,50 @@ public class SpawnManager : MonoBehaviour
     //spawn an enemy and give it the path to follow
     private void SpawnEnemy()
     {
-        GameObject enemy = Instantiate(enemyObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
-        //enemy.GetComponent<EnemyAI>().Path = transform.GetComponent<EnemyPathing>().BestPath;
-        //enemy.GetComponent<EnemyAI>().IncreaseHealth(timeSinceStartSpawn);
+        GameObject enemy;
+
+        switch (currentWave.Peek().enemyClass)
+        {
+            case EnemyClass.Cur:
+                enemy = Instantiate(enemyObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            case EnemyClass.Knight:
+                enemy = Instantiate(knightObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            case EnemyClass.Monk:
+                enemy = Instantiate(monkObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            case EnemyClass.Paladin:
+                enemy = Instantiate(paladinObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            case EnemyClass.Assassin:
+                enemy = Instantiate(assassinObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            case EnemyClass.Succubus:
+                enemy = Instantiate(succubusObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            case EnemyClass.Armorer:
+                enemy = Instantiate(armorerObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            case EnemyClass.Warlock:
+                enemy = Instantiate(warlockObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+
+            default:
+                enemy = Instantiate(enemyObj, new Vector3(transform.position.x, transform.position.y, 0), Quaternion.identity);
+                break;
+        }
 
         EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
         enemyAI.Path = thePath;
-        enemyAI.SetEnemyStats(currentWave.health, currentWave.attack, currentWave.speed, currentWave.worth, currentWave.ChooseType());
-        enemyAI.gamemanager = gameManager;
+        enemyAI.SetEnemyStats(currentWave.Peek().health, currentWave.Peek().attack, currentWave.Peek().speed, currentWave.Peek().worth, currentWave.Peek().waveNumber, currentWave.Peek().ChooseType(), currentWave.Peek().enemyClass);
 
         //Debug.Log("new enemy spawned");
     }
@@ -88,8 +130,12 @@ public class SpawnManager : MonoBehaviour
             thePath = transform.GetComponent<EnemyPathing>().SetUpPath();
         }
 
-        numToSpawn = wave.enemies;
+        if (wave.waveNumber != 0 && wave.waveNumber % 10 == 0 && spawnSpeed > .04f)
+        {
+            spawnSpeed -= Time.fixedDeltaTime;
+        }
+        
         timeSinceSpawn = spawnSpeed;
-        currentWave = wave;
+        currentWave.Enqueue(wave);
     }
 }

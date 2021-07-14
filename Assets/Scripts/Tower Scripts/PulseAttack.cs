@@ -30,7 +30,7 @@ public class PulseAttack : MonoBehaviour
         if (pulseFadeTimer > 0)
         {
             Color c = pulseImage.color;
-            c.a = pulseFadeTimer * 2;
+            c.a = pulseFadeTimer;
             pulseImage.color = c;
             pulseFadeTimer -= Time.deltaTime;
 

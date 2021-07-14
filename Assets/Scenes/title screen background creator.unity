@@ -376,6 +376,7 @@ MonoBehaviour:
   baseObj: {fileID: 7764495447818856876, guid: cf54d0b332b5b5a4bb1db16b65b06011, type: 3}
   textField: {fileID: 0}
   gameManager: {fileID: 0}
+  waveManager: {fileID: 0}
 --- !u!483693784 &667483156
 TilemapRenderer:
   m_ObjectHideFlags: 0
@@ -5746,7 +5747,7 @@ Tilemap:
   m_AnimationFrameRate: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Origin: {x: -40, y: -22, z: 0}
-  m_Size: {x: 79, y: 45, z: 1}
+  m_Size: {x: 81, y: 45, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
   m_TileOrientation: 0
   m_TileOrientationMatrix:
@@ -5840,7 +5841,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 22.5
+  orthographic size: 23
   m_Depth: -2
   m_CullingMask:
     serializedVersion: 2
@@ -5864,7 +5865,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1246903613}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 0.5, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 211641765}

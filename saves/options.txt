@@ -1,2 +1,3 @@
-randommap=True;
-musicvolume=0;
+randommap=False;
+musicvolume=0.2;
+sfxvolume=0.2;

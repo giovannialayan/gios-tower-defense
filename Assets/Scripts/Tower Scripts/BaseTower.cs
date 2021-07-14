@@ -44,14 +44,14 @@ public class BaseTower
     //attack property
     public float Attack
     {
-        get { return watered ? attack *= 1.1f: attack; }
+        get { return watered ? attack *= 1.1f : attack; }
         set { attack = value; }
     }
 
     //attack speed property
     public float AttackSpeed
     {
-        get { return watered ? attackSpeed *= .9f: attackSpeed; }
+        get { return watered ? attackSpeed *= .9f : attackSpeed; }
         set { attackSpeed = value; }
     }
 

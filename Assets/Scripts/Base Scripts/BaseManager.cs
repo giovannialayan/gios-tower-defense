@@ -20,8 +20,8 @@ public class BaseManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        maxHealth = 10;
-        health = 10;
+        maxHealth = FindObjectOfType<GameManager>().SkillTree["base1"];
+        health = maxHealth;
         isAlive = true;
 
         //bar setup

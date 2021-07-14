@@ -73,7 +73,7 @@ shred tower (default chaos):
 - mod atk = 0
 - mod atkspd = 0
 - mod range = 1
-- gives adjacent towers (enemy max health * .1) on their attack
+- gives adjacent towers (enemy max health * .1) on their attack and their attack stat is reduced to attack * .1
 
 amplifier tower (default water)
 - base atk = 0
@@ -82,5 +82,192 @@ amplifier tower (default water)
 - mod atk = 0
 - mod atkspd = 0
 - mod range = 1
-- gives towers in range extra atk and atkspd equal to target.atk += target.atk * .1 and target.atkspd -= target.atkspd * .1
+- gives towers in range extra atk, atkspd, and range equal to target.atk *= 1.1 and target.atkspd *= .9 and target.range *= 1.1
 - gives towers in range this element in addition to their own
+
+enemy classes
+
+all expressions in enemy classes are multiplied by (waveNum + floor(waveNum / 10))
+speed does not change with wave num
+spawn interval decreases by 2 frames every 10 waves
+
+cur
+- quantity = 5
+- health = 2
+- attack = 1.5
+- speed = 1.05
+- worth = 2
+- ability: blank
+- flavor text: the most basic form of elemental scourge, it is completely unevolved and not specialized for any particular situation
+
+knight
+- quantity = 1
+- health = 5
+- attack = 3
+- speed = .52
+- worth = 10
+- ability: bulky and packs a punch but rather slow.
+- flavor text: the product of a selfish scourge gathering er causing it to grow in size and vitality. but the unfocused increase in er causes it to be weighed down considerably.
+
+monk
+- quantity = 10
+- health = .5
+- attack = .5
+- speed = 1.58
+- worth = 1
+- ability: small and fast, there are a lot of them.
+- flavor text: scourge that have grown accustomed to moving in a swarm since alone they very weak. they attempt to use their sheer quantity and speed to overwhelm their prey.
+
+paladin
+- quantity = 3
+- health = 3
+- attack = 1.5
+- speed = 1.05
+- worth = 3.5
+- ability: after being hit 3 times the paladin will gain a shield that blocks all damage for 5 seconds and increase their speed to 1.15.
+- flavor text: scourge that has found a method to absorb er that damages it and transpose it into a defensive measure that blocks all incoming er.
+
+assassin
+- quantity = 3
+- health = 4
+- attack = 2
+- speed = 1
+- worth = 3.5
+- ability: speed and attack scale with missing health.
+- flavor text: a scourge that has the ability to transpose er that damages it into an immense amount of power and speed.
+- ability in depth:
+- 100% missing health = 3 speed
+- 100% missing health = 10 attack
+- percent missing health = (-x / maxhealth)
+- speed = basespeed + (-currenthealth / maxhealth + 1)
+- attack = baseattack + ((maxhealth * waveNum - x * (waveNum + 1)) / maxhealth)
+
+succubus
+- quantity = 2
+- health = 3
+- attack = 4
+- speed = 1.32
+- worth = 5
+- ability: movement impairing effects heal the succubus and it ignores the effect.
+- flavor text: a scourge that evolved a precise specialization to counteract er with the ability to hamper movement and instead is able to feed off of it.
+
+armorer
+- quantity = 4
+- health = 3
+- attack = 3
+- speed = 1.1
+- worth = 2.5
+- ability: the armorer takes less damage the further away it is from the tower targeting it.
+- flavor text: a scourge that has evolved a superior defensive hide that is apt for defending against long range attacks.
+- ability in depth:
+- distance = 1, 100% damage
+- distance = 100, 1% damage
+- ((a * c - x) / a) + 1
+- a = 1, c = 100, x = distance
+- code: bullets contain a reference to the tower that spawned it, on impact check distance between enemy and tower
+
+warlock
+- quantity = 6
+- health = 2
+- attack = 1.5
+- speed = 1.2
+- worth = 1.7
+- ability: the warock doesnt take damage if the attack deals less than 20% of its health.
+- flavor text: a scourge that developped an er barrier that can only be breached by an er attack of equal magnitude.
+
+challenges and rewards
+
+order implemented
+- title: Balance
+    - hit 10 enemies with a single order pulse 
+        -> order towers will deal their full damage to all enemies hit by an order pulse
+    code: in pulse check if it hit 10 enemies
+
+lightning implemented
+- title: shock therapy
+    - have 10 lightning bullets from a single tower targeting the same enemy 
+        -> instead of firing bullets the lightning tower uses lightning strikes that have no travel time and deal a portion of the damage dealt to nearby enemies
+    code: on an enemy check if it has 10 children that are bullets all from the same tower and are lightning
+
+whimsical implemented
+- title: Unimaginable Speed
+    - have a whimsical tower whose range covers every tile on the map 
+        -> whimsical bullets accelerate toward their target and deal more damage based on their final speed
+    code: check tower position every time range increases and see if radius is greater than the distance between position and edges
+
+nature implemented
+- title: Overgrowth
+    - kill an enemy where it doesnt move from the first time it is stunned 
+        -> when an enemy is stunned by a nature bullet vines will grow on surrounding tiles causing enemies that pass over them to be slowed
+    code: in an enemy check if its position changes after each hit and if it stays the same until death
+
+earth implemented
+- title: Earth Shaker
+    - have 10 enemies be slowed by earth tower bullets at the same time
+        -> the earth tower periodically creates earthquakes that slow all enemies within its range and the slow effect on earth bullets stacks
+    code: save wave number and quantity in wave in challenge manager then every time an enemy is slowed check if it is in the wave and add all unique enemies slowed to the check until they all die or are all slowed
+
+chaos implemented
+- title: Entropy
+    - kill an enemy with a tower enhanced by a chaos tower where the killing bullet wouldnt have killed without the chaos tower 10 times 
+        -> double the range and make it a square
+    code: in enemy check if health is > 0 before chaos effect and < 0 after then increment counter in challenge manager
+
+fire implemented
+- title: Conflagration
+    - kill a tank with a single fire bullet 
+        -> when an enemy is killed by a fire bullet it explodes dealing damage to nearby enemies
+    code: in enemy check if it is a tank, check if that was the first time it was hit, check if it was a fire bullet, check if it died
+
+water implemented
+- title: Flooding
+    - have a water tower whose stat increases are equivalent to the next upgrade for all stats of the enhanced tower 
+        -> increase the stat enhancements to 20%
+    code: in tower check if attack - attack / 1.1 >= attackMod ; attackspeed < attackspeedMod / (x+2) ; range - range / 1.1 >= rangeMod
+
+skill points (primordial orbs)
+- skill points are awarded every 10 waves
+- the number of skill points the player recieves is equal to waveNum / 10 so they get 1 upon completing wave 10, 2 on completing wave 20, etc
+- primary skills base cost = 1
+- secondary skills base cost = 2
+- tertiary skills base cost = 3 
+
+- multiplier is dumb and weird but i dont feel like deleting it from the doc
+- primary skills multiplier = 2 or 1.5
+- secondary skills multiplier = 2.5 or 2
+- tertiary skills multiplier = 3 or 2.5
+
+- increment skills by their base cost
+- primary skills increment = 1
+- secondary skills increment = 2
+- tertiary skills increment = 3
+
+skill point skill tree
+- use the hyperbolic equation used for attack speed scaling or not ask players about it
+
+-- money gain rate -> increase (default = .01, increment = .005)
+    -- initial max money -> increase (default = 100, increment = 10)
+        -- base tower cost -> decrease (default = 10, increment = -1) (cap at cost = 1)
+        -- tower cost multiplier -> decrease (default = 2, increment = -.05) (cap at 1.25x, make it take at least 10 upgrades to get there)
+
+-- base health at start -> increase (default = 10, increment = 1)
+    -- base heal -> increase (default = 0, increment = 1) (make it start at 0, you only gain maxhealth without this skill no healing)
+        -- max base health increase -> increase (default = 5, increment = 1)
+
+-- enemy worth -> increase (default = 0, increment = 1)
+    -- knights appear more often, take more damage (default = 0, increment = .05) (from all sources except chaos tower effect)
+        -- armorers appear more often, take more damage when within half the range of a tower (default = 0, increment = .1)
+        -- warlocks appear more often, their damage threshhold is lower (default = .25, increment = .01) (cap at .05)
+    -- monks appear more often, they are slower (default = 1, increment = -.01) (cap at .5)
+        -- assassins appear more often, their attack based on missing health is lower (default = 0, increment = -.01) (cap at .5)
+        -- paladins appear more often, their shield lasts less (default = 5, increment = -.1) (cap at 2)
+        -- succubi appear more often, their heal is less effective (default = .3, increment = -.01) (cap at .1)
+* for all special enemies chance only inceases once by 5% - done
+
+*all three are tier 3
+-- tower attack upgrade cost multiplier -> decrease (default = 2, increment = -.05) (cap at 1.25x)
+-- tower attack speed upgrade cost multiplier -> decrease (default = 2, increment = -.05) (cap at 1.25x)
+-- tower range upgrade cost multiplier -> decrease (default = 2, increment = -.05) (cap at 1.25x)
+
+misc ideas
+- add something to the scourge-o-nomicon so that the player can change what wave number the values are shown as, default wave 1

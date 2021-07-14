@@ -24,8 +24,8 @@ public class TowerButton : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        towerCost = 10;
-        towerCostModifier = 2f;
+        towerCost = gameManager.SkillTree["money3"];
+        towerCostModifier = gameManager.SkillTree["money4"];
         UpdateCurrencyText(towerCost);
         towerObject = defaultTower;
         towerType = ElementTypes.Fire;
@@ -65,8 +65,7 @@ public class TowerButton : MonoBehaviour
         }
         else
         {
-            string temp = amount.ToString();
-            currencyText.text += string.Format("{0}.{1}{2} e{3}", temp[0], temp[2], temp[3], temp.Length - 3);
+            currencyText.text += amount.ToString("0." + new string('0', 2) + "e0");
         }
 
         //currencyText.transform.position = RectTransformUtility.WorldToScreenPoint(Camera.main, transform.position + new Vector3(0, -.75f, 0));
@@ -101,8 +100,8 @@ public class TowerButton : MonoBehaviour
             //spawn tower that follows player mouse until they click to drop it
             GameObject newTower = Instantiate(towerObject, new Vector3(transform.position.x, transform.position.y, transform.position.z), Quaternion.identity);
             newTower.GetComponent<TowerAI>().CreateTower(towerType);
-            newTower.GetComponent<TowerAI>().gamemanager = gameManager;
             newTower.GetComponent<MousePickUp>().gamemanager = gameManager;
+            newTower.transform.GetChild(0).GetComponent<CircleCollider2D>().enabled = false;
         }
     }
 }

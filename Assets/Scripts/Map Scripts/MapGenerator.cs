@@ -56,12 +56,12 @@ public class MapGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            //BinaryTreeMazeGen();
+        //if (Input.GetKeyDown(KeyCode.R))
+        //{
+        //    //BinaryTreeMazeGen();
 
-            DepthFirstSearchMazeGen();
-        }
+        //    DepthFirstSearchMazeGen();
+        //}
     }
 
     //change pathMapPercent based on text input value
@@ -102,7 +102,6 @@ public class MapGenerator : MonoBehaviour
                 case -1:
                     map.SetTile(tilePos, spawnerTile);
                     GameObject newSpawner = Instantiate(spawnerObj, map.GetCellCenterWorld(tilePos), Quaternion.identity);
-                    newSpawner.GetComponent<SpawnManager>().gameManager = gameManager;
                     break;
 
                 case 0:
@@ -329,7 +328,6 @@ public class MapGenerator : MonoBehaviour
         Vector3 basePos = tilemap.CellToWorld(ArrayToTilePos(tilemap.cellBounds.size.x - 2, tilemap.cellBounds.size.y - tilemap.cellBounds.size.y + 1, tilemap)) + new Vector3(.5f, .5f, 0);
 
         GameObject newSpawner = Instantiate(spawnerObj, spawnerPos, Quaternion.identity);
-        newSpawner.GetComponent<SpawnManager>().gameManager = gameManager;
         waveManager.SpawnMan = newSpawner.GetComponent<SpawnManager>();
 
         GameObject newBase = Instantiate(baseObj, basePos, Quaternion.identity);
@@ -513,7 +511,6 @@ public class MapGenerator : MonoBehaviour
         Vector3 basePos = tilemap.CellToWorld(ArrayToTilePos(baseCell.x, baseCell.y, tilemap)) + new Vector3(.5f, .5f, 0);
 
         GameObject newSpawner = Instantiate(spawnerObj, spawnerPos, Quaternion.identity);
-        newSpawner.GetComponent<SpawnManager>().gameManager = gameManager;
         waveManager.SpawnMan = newSpawner.GetComponent<SpawnManager>();
 
         GameObject newBase = Instantiate(baseObj, basePos, Quaternion.identity);

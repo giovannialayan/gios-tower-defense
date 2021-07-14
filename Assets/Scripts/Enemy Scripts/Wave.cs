@@ -2,18 +2,17 @@
 using System.Collections;
 using UnityEngine;
 
-//public enum ElementTypes
-//{
-//        Chaos = 0,
-//        Order = 1,
-//         Fire = 2,
-//        Water = 3,
-//        Earth = 4,
-//    Lightning = 5,
-//    Whimsical = 6,
-//       Nature = 7,
-//        Error = 8
-//}
+public enum EnemyClass
+{
+    Cur,
+    Knight,
+    Monk,
+    Paladin,
+    Assassin,
+    Succubus,
+    Armorer,
+    Warlock
+}
 
 public class Wave
 {
@@ -40,6 +39,9 @@ public class Wave
 
     public int waveNumber { get; set; }
 
+    //enemy class
+    public EnemyClass enemyClass { get; set; }
+
     /// <summary>
     /// creates a wave which contains information about the number of enemies, their attack, their speed, and their currency value
     /// </summary>
@@ -48,8 +50,9 @@ public class Wave
     /// <param name="attack">attack value of the enemies</param>
     /// <param name="speed">speed value of the enemies</param>
     /// <param name="worth">currency value of the enemies</param>
-    /// <param name="ElementTypes">array of all types present in this wave</param>
-    public Wave(int enemies, float health, float attack, float speed, float worth, ElementTypes[] elementTypes, int waveNumber)
+    /// <param name="elementTypes">array of all types present in this wave</param>
+    /// <param name="enemyClass">class that enemy should belong to</param>
+    public Wave(int enemies, float health, float attack, float speed, float worth, ElementTypes[] elementTypes, EnemyClass enemyClass, int waveNumber)
     {
         this.enemies = enemies;
         this.health = health;
@@ -58,6 +61,7 @@ public class Wave
         this.worth = worth;
         this.elementTypes = elementTypes;
         typeSpread = elementTypes.Length / (float)enemies;
+        this.enemyClass = enemyClass;
         this.waveNumber = waveNumber;
     }
 
@@ -138,7 +142,7 @@ public class Wave
 
         elementString = elementString.Substring(0, elementString.Length - 2);
 
-        return string.Format("wave #{0}\n{1} enemies\n{2} attack\n{3} health\n{4} speed\n{5} money\nthe elements within are\n{6}", waveNumber, enemies, attack, health, speed, worth, elementString);
+        return string.Format("wave #{0}\n{1} enemies\n{2} attack\n{3} health\n{4} speed\n{5} money\n{6} class\nthe elements within are\n{7}", waveNumber, enemies, attack, health, speed, worth, enemyClass, elementString);
     }
 }
 

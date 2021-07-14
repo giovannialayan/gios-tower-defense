@@ -108,3 +108,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyObj: {fileID: 169036759555439216, guid: b6147039d639f6a40b7c4964387af51a, type: 3}
+  knightObj: {fileID: 7091249174002767994, guid: 74a3b2581ab419647a28613f1e63fafa,
+    type: 3}
+  monkObj: {fileID: 8910414464513437837, guid: bea5649cc8de4fd44b57ba5e8600e2c8, type: 3}
+  paladinObj: {fileID: 229823935731520201, guid: 1de16ae738a6c044ca06f01228e72878,
+    type: 3}
+  assassinObj: {fileID: 8633413222090580089, guid: f5c266a6bb706a0429dd16b8082a37d8,
+    type: 3}
+  succubusObj: {fileID: 7248452674957102718, guid: 6c7f7bfb12959a44481bde16079e8452,
+    type: 3}
+  armorerObj: {fileID: 5571636691922759060, guid: c2b748b1a12c5a040b1b3898e9975183,
+    type: 3}
+  warlockObj: {fileID: 3869772407423210614, guid: 9874a0bde8f99ea4c88d59c584981ffd,
+    type: 3}
+  gameManager: {fileID: 0}

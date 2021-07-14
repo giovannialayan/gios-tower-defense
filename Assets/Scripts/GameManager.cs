@@ -48,13 +48,44 @@ public class GameManager : MonoBehaviour
     public Slider musicSlider;
     public AudioSource musicSource;
     public Text musicText;
+    public AudioSource aha;
+    public Slider soundEffectSlider;
+    public Text soundEffectText;
+    public float sfxVolume { get; set; }
+
+    //skill tree
+    private int skillPoints = 0;
+    private string skillTreeFile = "saves\\skilltree.txt";
+    private string skillPointFile = "saves\\skillpoints.txt";
+    private Dictionary<string, float> skillTreeValues;
+    private int skillPointCounter = 0;
+    public Image skillPointImage;
+    private Text skillPointNotifText;
+    private bool skillNotificationOn = false;
+
+    //tower ui active
+    public bool otherTowerUIActive { get; set; }
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         //read options from file
         ReadOptionsFromFile();
 
+        //towerLookUp = new Transform[16, 39];
+
+        Physics2D.queriesStartInColliders = false;
+
+        randomMapToggle.onValueChanged.AddListener(delegate { ToggleRandomMap(randomMapToggle); });
+        musicSlider.onValueChanged.AddListener(delegate { ChangeMusicVolume(musicSlider, musicSource, musicText); });
+        soundEffectSlider.onValueChanged.AddListener(delegate { ChangeSFXVolume(soundEffectSlider, soundEffectText); });
+
+        skillTreeValues = new Dictionary<string, float>();
+        ReadSkillTreeFromFile();
+    }
+
+    private void Start()
+    {
         paused = false;
 
         waveManager.AddWaves(numWaves);
@@ -65,12 +96,9 @@ public class GameManager : MonoBehaviour
             mapGenerator.DepthFirstSearchMazeGen();
         }
 
-        //towerLookUp = new Transform[16, 39];
+        skillPointNotifText = skillPointImage.transform.GetChild(0).GetComponent<Text>();
 
-        Physics2D.queriesStartInColliders = false;
-
-        randomMapToggle.onValueChanged.AddListener(delegate { ToggleRandomMap(randomMapToggle); });
-        musicSlider.onValueChanged.AddListener(delegate { ChangeVolume(musicSlider, musicSource, musicText); });
+        otherTowerUIActive = false;
     }
 
     // Update is called once per frame
@@ -127,6 +155,21 @@ public class GameManager : MonoBehaviour
             ToggleChart(1);
         }
 
+        //skill point notification fade out
+        if (skillNotificationOn)
+        {
+            Color spc = skillPointImage.color;
+            spc.a -= Time.deltaTime;
+
+            if (spc.a <= 0)
+            {
+                skillNotificationOn = false;
+            }
+
+            skillPointImage.color = spc;
+            skillPointNotifText.color = spc;
+        }
+
         //only do stuff if the game is not paused
         if (!paused)
         {
@@ -137,8 +180,15 @@ public class GameManager : MonoBehaviour
                 waveManager.AddWaves(numWaves);
                 if (waveManager.GetWave(0).waveNumber != 1)
                 {
-                    baseManager.IncreaseMaxHealth(5);
-                    baseManager.HealHealth(baseManager.MaxHealth * .2f);
+                    //increase max health and heal
+                    baseManager.IncreaseMaxHealth(skillTreeValues["base3"]);
+                    baseManager.HealHealth(skillTreeValues["base2"]);
+
+                    //gain skill points
+                    skillPointCounter++;
+                    AddAndSaveSkillPoints(skillPointCounter);
+                    SkillPointNotification(skillPointCounter);
+                    aha.PlayDelayed(.5f);
                 }
 
             }
@@ -289,6 +339,7 @@ public class GameManager : MonoBehaviour
         writer = new StreamWriter(options, false);
         writer.WriteLine("randommap=" + randomizeMap + ";");
         writer.WriteLine("musicvolume=" + musicSource.volume + ";");
+        writer.WriteLine("sfxvolume=" + sfxVolume + ";");
 
         if (writer != null)
         {
@@ -304,7 +355,8 @@ public class GameManager : MonoBehaviour
         {
             writer = new StreamWriter(options, false);
             writer.WriteLine("randommap=" + false + ";");
-            writer.WriteLine("musicvolume=" + 0.5 + ";");
+            writer.WriteLine("musicvolume=" + 0.25 + ";");
+            writer.WriteLine("sfxvolume=" + 0.25 + ";");
 
             if (writer != null)
             {
@@ -323,6 +375,12 @@ public class GameManager : MonoBehaviour
         musicSlider.value = float.Parse(GetVariableFromText(optionsText, "musicvolume=", ';'));
         musicSource.volume = musicSlider.value;
         musicText.text = "<color=ff6600>" + Mathf.Floor(musicSlider.value * 100) + "%</color> music volume";
+
+        //sound effect volume
+        soundEffectSlider.value = float.Parse(GetVariableFromText(optionsText, "sfxvolume=", ';'));
+        sfxVolume = soundEffectSlider.value;
+        soundEffectText.text = "<color=ff6600>" + Mathf.Floor(musicSlider.value * 100) + "%</color> sound effect volume";
+        aha.volume = sfxVolume;
 
         if (reader != null)
         {
@@ -351,11 +409,141 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //change volume based on slider value
-    private void ChangeVolume(Slider slider, AudioSource audio, Text label)
+    //change music volume based on slider value
+    private void ChangeMusicVolume(Slider slider, AudioSource audio, Text label)
     {
         audio.volume = slider.value;
 
         label.text = string.Format("<color=ff6600>{0}%</color> music volume", Mathf.Floor(slider.value * 100));
+    }
+
+    //change all sfx volume based on slider value
+    private void ChangeSFXVolume(Slider slider, Text label)
+    {
+        sfxVolume = slider.value;
+
+        EnemyAI[] enemies = FindObjectsOfType<EnemyAI>();
+        foreach (EnemyAI enemy in enemies)
+        {
+            enemy.DeathSoundVolume = sfxVolume;
+        }
+
+        TowerAI[] towers = FindObjectsOfType<TowerAI>();
+        foreach (TowerAI tower in towers)
+        {
+            tower.ShootSound.volume = sfxVolume;
+        }
+
+        waveManager.WaveSmashSound.volume = sfxVolume;
+
+        aha.volume = sfxVolume;
+
+        label.text = string.Format("<color=ff6600>{0}%</color> sound effect volume", Mathf.Floor(sfxVolume * 100));
+    }
+
+    //save skill points to file
+    private void AddAndSaveSkillPoints(int points)
+    {
+        skillPoints += points;
+
+        writer = new StreamWriter(skillPointFile, false);
+
+        writer.WriteLine("skillpoints=" + skillPoints + ";");
+
+        if (writer != null)
+        {
+            writer.Close();
+        }
+    }
+
+    //read skill tree from file
+    private void ReadSkillTreeFromFile()
+    {
+        if (!File.Exists(skillTreeFile))
+        {
+            skillTreeValues.Add("money1", 0.01f);
+            skillTreeValues.Add("money2", 100);
+            skillTreeValues.Add("money3", 10);
+            skillTreeValues.Add("money4", 2);
+            skillTreeValues.Add("base1", 10);
+            skillTreeValues.Add("base2", 0);
+            skillTreeValues.Add("base3", 5);
+            skillTreeValues.Add("enemy1", 0);
+            skillTreeValues.Add("enemyknight", 0);
+            skillTreeValues.Add("enemymonk", 1);
+            skillTreeValues.Add("enemyarmorer", 0);
+            skillTreeValues.Add("enemywarlock", .25f);
+            skillTreeValues.Add("enemyassassin", 0);
+            skillTreeValues.Add("enemypaladin", 5);
+            skillTreeValues.Add("enemysuccubus", .3f);
+            skillTreeValues.Add("upgraderange", 2);
+            skillTreeValues.Add("upgradeattackspeed", 2);
+            skillTreeValues.Add("upgradeattack", 2);
+        }
+        else
+        {
+            //read skill tree
+            reader = new StreamReader(skillTreeFile);
+            string skillTreeText = reader.ReadToEnd();
+            
+            skillTreeValues.Clear();
+
+            skillTreeValues.Add("money1", float.Parse(GetVariableFromText(skillTreeText, "money1value=", ';')));
+            skillTreeValues.Add("money2", float.Parse(GetVariableFromText(skillTreeText, "money2value=", ';')));
+            skillTreeValues.Add("money3", float.Parse(GetVariableFromText(skillTreeText, "money3value=", ';')));
+            skillTreeValues.Add("money4", float.Parse(GetVariableFromText(skillTreeText, "money4value=", ';')));
+            skillTreeValues.Add("base1", float.Parse(GetVariableFromText(skillTreeText, "base1value=", ';')));
+            skillTreeValues.Add("base2", float.Parse(GetVariableFromText(skillTreeText, "base2value=", ';')));
+            skillTreeValues.Add("base3", float.Parse(GetVariableFromText(skillTreeText, "base3value=", ';')));
+            skillTreeValues.Add("enemy1", float.Parse(GetVariableFromText(skillTreeText, "enemy1value=", ';')));
+            skillTreeValues.Add("enemyknight", float.Parse(GetVariableFromText(skillTreeText, "enemyknightvalue=", ';')));
+            skillTreeValues.Add("enemymonk", float.Parse(GetVariableFromText(skillTreeText, "enemymonkvalue=", ';')));
+            skillTreeValues.Add("enemyarmorer", float.Parse(GetVariableFromText(skillTreeText, "enemyarmorervalue=", ';')));
+            skillTreeValues.Add("enemywarlock", float.Parse(GetVariableFromText(skillTreeText, "enemywarlockvalue=", ';')));
+            skillTreeValues.Add("enemyassassin", float.Parse(GetVariableFromText(skillTreeText, "enemyassassinvalue=", ';')));
+            skillTreeValues.Add("enemypaladin", float.Parse(GetVariableFromText(skillTreeText, "enemypaladinvalue=", ';')));
+            skillTreeValues.Add("enemysuccubus", float.Parse(GetVariableFromText(skillTreeText, "enemysuccubusvalue=", ';')));
+            skillTreeValues.Add("upgraderange", float.Parse(GetVariableFromText(skillTreeText, "upgraderangevalue=", ';')));
+            skillTreeValues.Add("upgradeattackspeed", float.Parse(GetVariableFromText(skillTreeText, "upgradeattackspeedvalue=", ';')));
+            skillTreeValues.Add("upgradeattack", float.Parse(GetVariableFromText(skillTreeText, "upgradeattackvalue=", ';')));
+
+            if (reader != null)
+            {
+                reader.Close();
+            }
+        }
+
+        if (!File.Exists(skillPointFile))
+        {
+            skillPoints = 0;
+        }
+        else
+        {
+            //read skill tree
+            reader = new StreamReader(skillPointFile);
+            string skillPointText = reader.ReadToEnd();
+
+            skillPoints = int.Parse(GetVariableFromText(skillPointText, "skillpoints=", ';'));
+
+            if (reader != null)
+            {
+                reader.Close();
+            }
+        }
+    }
+
+    //property for skill tree values
+    public Dictionary<string, float> SkillTree
+    {
+        get { return skillTreeValues; }
+    }
+
+    //skill point gain notifier
+    private void SkillPointNotification(int points)
+    {
+        skillPointNotifText.text = "+" + points;
+        skillPointImage.color = new Color(1, 1, 1, 1);
+        skillPointNotifText.color = new Color(1, 1, 1, 1);
+        skillNotificationOn = true;
     }
 }

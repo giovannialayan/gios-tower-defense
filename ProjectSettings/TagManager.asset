@@ -15,6 +15,7 @@ TagManager:
   - UICamera
   - healthBar
   - money
+  - skill tree
   layers:
   - Default
   - TransparentFX

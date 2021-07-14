@@ -21,7 +21,7 @@ public class CurrencyManager : MonoBehaviour
     private uint maxCurrencyModifier;
 
     private float currencyGainRate;
-    private const float percentGainPerSecond = .01f;
+    private float percentGainPerSecond = .01f;
 
     // B A R
     public Image barBackground;
@@ -39,10 +39,11 @@ public class CurrencyManager : MonoBehaviour
         //maxCurrency.IncreaseBy(100);
         //currentCurrency = new BigNumber();
 
-        maxCurrency = 100;
+        maxCurrency = (uint)gameManager.SkillTree["money2"];
         currentCurrency = 0;
         currencyTick = 0;
         maxCurrencyModifier = 2;
+        percentGainPerSecond = gameManager.SkillTree["money1"];
 
         SetGainRate(percentGainPerSecond);
 
@@ -100,12 +101,11 @@ public class CurrencyManager : MonoBehaviour
         //change text
         if (amount < 1000000000)
         {
-            currencyText.text = amount.ToString();
+            currencyText.text = amount.ToString() + " er";
         }
         else
         {
-            string temp = amount.ToString();
-            currencyText.text = string.Format("{0}.{1}{2} e{3}", temp[0], temp[1], temp[2], temp.Length - 1);
+            currencyText.text = amount.ToString("0." + new string('0', 2) + "e0") + " er";
         }
     }
 

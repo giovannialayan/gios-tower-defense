@@ -31,16 +31,19 @@ public class TowerAI : MonoBehaviour
     private float minWidth = -20;
     private float maxHeight = 11;
     private float minHeight = -11;
-    private float infoWidth = 10;
+    private float infoWidth = 12;
     private float infoHeight = 10;
     private bool infoSet;
 
     //upgrades
     private CurrencyManager currency;
-    private ulong attackUpgradeCost;
-    private ulong ASUpgradeCost;
-    private ulong rangeUpgradeCost;
+    private float attackUpgradeCost;
+    private float ASUpgradeCost;
+    private float rangeUpgradeCost;
     private int ASUpgradeNumber;
+    private float attackUpgradeCostMod;
+    private float attackspeedUpgradeCostMod;
+    private float rangeUpgradeCostMod;
 
     //tower stats
     private BaseTower stats;
@@ -59,12 +62,33 @@ public class TowerAI : MonoBehaviour
     private int nature_attackNumber;
 
     //gamemanager reference
-    public GameManager gamemanager { get; set; }
+    private GameManager gamemanager;
+
+    //challenge states
+    private bool order_challenge = true;
+    private bool whimsical_challenge = true;
+    private bool water_challenge = true;
+    private bool lightning_challenge = true;
+
+    //audio
+    public AudioSource shootSound;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        gamemanager = FindObjectOfType<GameManager>();
+        attackUpgradeCostMod = gamemanager.SkillTree["upgradeattack"];
+        attackspeedUpgradeCostMod = gamemanager.SkillTree["upgradeattackspeed"];
+        rangeUpgradeCostMod = gamemanager.SkillTree["upgraderange"];
+
+        ChallengeManager challengeManager = FindObjectOfType<ChallengeManager>();
+        order_challenge = !challengeManager.ChallengeDictionary["orderskill"];
+        whimsical_challenge = !challengeManager.ChallengeDictionary["whimsicalskill"];
+        water_challenge = !challengeManager.ChallengeDictionary["waterskill"];
+        lightning_challenge = !challengeManager.ChallengeDictionary["lightningskill"];
+
+        //sound
+        shootSound.volume = gamemanager.sfxVolume;
     }
 
     // Update is called once per frame
@@ -163,6 +187,7 @@ public class TowerAI : MonoBehaviour
             }
 
             infoSet = true;
+            rangeView.GetComponent<CircleCollider2D>().enabled = true;
         }
     }
 
@@ -196,6 +221,13 @@ public class TowerAI : MonoBehaviour
         else if (stats.ImmutableElement == ElementTypes.Whimsical)
         {
             whims_maxTargets = Mathf.FloorToInt(stats.Range / 3f);
+
+            //whimsical challenge check
+            if (whimsical_challenge && radius > Vector3.Distance(new Vector3(-20, 0), transform.position) && radius > Vector3.Distance(new Vector3(20, 0), transform.position))
+            {
+                FindObjectOfType<ChallengeManager>().SaveChallengeState("whimsicalskill");
+                whimsical_challenge = false;
+            }
         }
     }
 
@@ -209,7 +241,28 @@ public class TowerAI : MonoBehaviour
             ElementTypes[] ttypes = { stats.Element, stats.ImmutableElement };
             newBullet.BulletType = ttypes;
             newBullet.StatusEffect = statusEffect + chaosModOn;
+            newBullet.tower = transform;
             timeSinceAttack = 0;
+            shootSound.Play();
+
+            if (lightning_challenge && stats.ImmutableElement == ElementTypes.Lightning && target.transform.GetComponentsInChildren<BulletAI>().Length >= 10)
+            {
+                int numLightningBullets = 0;
+
+                foreach (BulletAI bullet in target.transform.GetComponentsInChildren<BulletAI>())
+                {
+                    if (bullet.name.Contains("lightning"))
+                    {
+                        numLightningBullets++;
+                    }
+                }
+
+                if (numLightningBullets >= 10)
+                {
+                    FindObjectOfType<ChallengeManager>().SaveChallengeState("lightningskill");
+                    lightning_challenge = false;
+                }
+            }
         }
         else
         {
@@ -239,11 +292,18 @@ public class TowerAI : MonoBehaviour
     //toggle showing the tower's information and upgrades
     private void ToggleTowerInfo()
     {
+        if (gamemanager.otherTowerUIActive && !towerInfoOn)
+        {
+            return;
+        }
+
         if (towerInfoOn)
         {
             towerInfoOn = false;
 
             towerUI.SetActive(towerInfoOn);
+
+            gamemanager.otherTowerUIActive = false;
         }
         else
         {
@@ -252,16 +312,66 @@ public class TowerAI : MonoBehaviour
             towerInfoOn = true;
 
             towerUI.SetActive(towerInfoOn);
+
+            gamemanager.otherTowerUIActive = true;
         }
     }
 
     //update tower info text
     public void UpdateTowerInfo()
     {
-        towerUI.transform.GetChild(1).GetComponent<Text>().text = string.Format("{1} - Attack: {0}", stats.Attack, attackUpgradeCost);
-        towerUI.transform.GetChild(2).GetComponent<Text>().text = string.Format("{1} - ASpeed: {0:F2}", stats.AttackSpeed, ASUpgradeCost);
-        towerUI.transform.GetChild(3).GetComponent<Text>().text = string.Format("{1} - Range: {0}", stats.Range, rangeUpgradeCost);
-        towerUI.transform.GetChild(4).GetComponent<Text>().text = string.Format("{0} - Upgrade All", attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost);
+        //Debug.Log(attackUpgradeCost + ", " + (attackUpgradeCost < 10000));
+        if (attackUpgradeCost < 10000)
+        {
+            towerUI.transform.GetChild(1).GetComponent<Text>().text = string.Format("{1} - Attack: {0}", stats.Attack, attackUpgradeCost);
+        }
+        else
+        {
+            string temp = attackUpgradeCost.ToString("0." + new string('0', 2) + "e0");
+            towerUI.transform.GetChild(1).GetComponent<Text>().text = string.Format("{1} - Attack: {0}", stats.Attack, temp);
+        }
+
+        if (ASUpgradeCost < 10000)
+        {
+            towerUI.transform.GetChild(2).GetComponent<Text>().text = string.Format("{1} - ASpeed: {0:F2}", stats.AttackSpeed, ASUpgradeCost);
+        }
+        else
+        {
+            string temp = ASUpgradeCost.ToString("0." + new string('0', 2) + "e0");
+            towerUI.transform.GetChild(2).GetComponent<Text>().text = string.Format("{1} - ASpeed: {0:F2}", stats.AttackSpeed, temp);
+        }
+
+        if (rangeUpgradeCost < 10000)
+        {
+            towerUI.transform.GetChild(3).GetComponent<Text>().text = string.Format("{1} - Range: {0}", stats.Range, rangeUpgradeCost);
+        }
+        else
+        {
+            string temp = rangeUpgradeCost.ToString("0." + new string('0', 2) + "e0");
+            towerUI.transform.GetChild(3).GetComponent<Text>().text = string.Format("{1} - Range: {0}", stats.Range, temp);
+        }
+
+        if (attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost < 10000)
+        {
+            towerUI.transform.GetChild(4).GetComponent<Text>().text = string.Format("{0} - Upgrade All", attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost);
+        }
+        else
+        {
+            string temp = (attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost).ToString("0." + new string('0', 2) + "e0");
+            towerUI.transform.GetChild(4).GetComponent<Text>().text = string.Format("{0} - Upgrade All", temp);
+        }
+
+        //water challenge check
+        if (
+            stats.Watered && water_challenge && 
+            stats.Attack - (stats.Attack / 1.1) >= attackMod && 
+            stats.AttackSpeed <= GetAttackSpeedValue(attackSpeedMod, ASUpgradeNumber + 1) && 
+            stats.Range - (stats.Range / 1.1) >= rangeMod
+        )
+        {
+            FindObjectOfType<ChallengeManager>().SaveChallengeState("waterskill");
+            water_challenge = false;
+        }
     }
 
     //increase attack
@@ -269,8 +379,8 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= attackUpgradeCost)
         {
-            currency.CurrentCurrency -= attackUpgradeCost;
-            attackUpgradeCost += attackUpgradeCost / 2;
+            currency.CurrentCurrency -= (ulong)attackUpgradeCost;
+            attackUpgradeCost += attackUpgradeCost * attackUpgradeCostMod;
 
             stats.Attack += attackMod;
             
@@ -283,8 +393,8 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= ASUpgradeCost)
         {
-            currency.CurrentCurrency -= ASUpgradeCost;
-            ASUpgradeCost += ASUpgradeCost / 2;
+            currency.CurrentCurrency -= (ulong)ASUpgradeCost;
+            ASUpgradeCost += ASUpgradeCost * attackspeedUpgradeCostMod;
 
             ASUpgradeNumber++;
             stats.AttackSpeed = GetAttackSpeedValue(attackSpeedMod, ASUpgradeNumber);
@@ -298,8 +408,8 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= rangeUpgradeCost)
         {
-            currency.CurrentCurrency -= rangeUpgradeCost;
-            rangeUpgradeCost += rangeUpgradeCost / 2;
+            currency.CurrentCurrency -= (ulong)rangeUpgradeCost;
+            rangeUpgradeCost += rangeUpgradeCost * rangeUpgradeCostMod;
 
             stats.Range += rangeMod;
             ChangeTowerRange(stats.Range);
@@ -313,10 +423,10 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost)
         {
-            currency.CurrentCurrency -= attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost;
-            attackUpgradeCost += attackUpgradeCost / 2;
-            ASUpgradeCost += ASUpgradeCost / 2;
-            rangeUpgradeCost += rangeUpgradeCost / 2;
+            currency.CurrentCurrency -= (ulong)(attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost);
+            attackUpgradeCost += attackUpgradeCost * attackUpgradeCostMod;
+            ASUpgradeCost += ASUpgradeCost * attackspeedUpgradeCostMod;
+            rangeUpgradeCost += rangeUpgradeCost * rangeUpgradeCostMod;
 
             stats.Attack += attackMod;
             ASUpgradeNumber++;
@@ -351,7 +461,7 @@ public class TowerAI : MonoBehaviour
                 stats = new BaseTower(2, 3, 10, ElementTypes.Whimsical);
                 attackMod = .5f;
                 attackSpeedMod = 6;
-                rangeMod = 3;
+                rangeMod = 2;
                 multiEnemiesInRange = new List<Transform>();
                 whims_maxTargets = Mathf.FloorToInt(stats.Range / 3f);
                 break;
@@ -443,6 +553,7 @@ public class TowerAI : MonoBehaviour
                     ElementTypes[] ttypes = { stats.Element, stats.ImmutableElement };
                     newBullet.BulletType = ttypes;
                     newBullet.StatusEffect = chaosModOn;
+                    newBullet.tower = transform;
                 }
                 else if(multiEnemiesInRange.Count > 0 && i < whims_maxTargets)
                 {
@@ -452,6 +563,7 @@ public class TowerAI : MonoBehaviour
             }
 
             timeSinceAttack = 0;
+            shootSound.Play();
         }
         else
         {
@@ -468,6 +580,7 @@ public class TowerAI : MonoBehaviour
             PulseAttack pulse = ord_pulseObject.GetComponent<PulseAttack>();
 
             pulse.StartPulse();
+            shootSound.Play();
 
             ElementTypes[] ttypes = { stats.Element, stats.ImmutableElement };
             int numEnemies = multiEnemiesInRange.Count;
@@ -477,8 +590,15 @@ public class TowerAI : MonoBehaviour
             {
                 if (multiEnemiesInRange[i] != null)
                 {
-                    multiEnemiesInRange[i].GetComponent<EnemyAI>().TakeDamage(pulseDamage, chaosModOn, ttypes);
+                    multiEnemiesInRange[i].GetComponent<EnemyAI>().TakeDamage(pulseDamage, chaosModOn, ttypes, transform);
                 }
+            }
+
+            //order challenge check
+            if (order_challenge && numEnemies >= 10)
+            {
+                FindObjectOfType<ChallengeManager>().SaveChallengeState("orderskill");
+                order_challenge = false;
             }
 
             multiEnemiesInRange.Clear();
@@ -596,5 +716,18 @@ public class TowerAI : MonoBehaviour
     private float GetAttackSpeedValue(float attackspeedmod, int x)
     {
         return (1 * attackspeedmod) / (x + 1);
+    }
+
+    //property for range
+    public float Range
+    {
+        get { return stats.Range; }
+    }
+
+    //property for audio source
+    public AudioSource ShootSound
+    {
+        get { return shootSound; }
+        set { shootSound = value; }
     }
 }

@@ -1,0 +1,8 @@
+lightningskill=True;
+fireskill=True;
+whimsicalskill=True;
+orderskill=True;
+natureskill=True;
+earthskill=True;
+chaosskill=True;
+waterskill=True;
