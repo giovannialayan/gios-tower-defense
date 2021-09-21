@@ -1,5 +1,5 @@
 # gios-tower-defense
 
-To run the game go to the "build" folder and run "simple tower defense.exe".
+To play the game go to the "all builds" folder and download the most recent version.
 
 To look at the code go to "Assets/Scripts"
