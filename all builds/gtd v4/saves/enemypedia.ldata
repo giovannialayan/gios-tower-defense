@@ -1,0 +1,8 @@
+cur=False;
+knight=False;
+monk=False;
+assassin=True;
+paladin=False;
+armorer=False;
+succubus=False;
+warlock=False;
