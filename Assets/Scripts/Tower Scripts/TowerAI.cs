@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Numerics;
 
 public class TowerAI : MonoBehaviour
 {
@@ -28,7 +29,6 @@ public class TowerAI : MonoBehaviour
     private GameObject towerUI;
     private bool towerInfoOn;
     private float maxWidth = 20;
-    private float minWidth = -20;
     private float maxHeight = 11;
     private float minHeight = -11;
     private float infoWidth = 12;
@@ -37,9 +37,9 @@ public class TowerAI : MonoBehaviour
 
     //upgrades
     private CurrencyManager currency;
-    private float attackUpgradeCost;
-    private float ASUpgradeCost;
-    private float rangeUpgradeCost;
+    private BigInteger attackUpgradeCost;
+    private BigInteger ASUpgradeCost;
+    private BigInteger rangeUpgradeCost;
     private int ASUpgradeNumber;
     private float attackUpgradeCostMod;
     private float attackspeedUpgradeCostMod;
@@ -58,17 +58,16 @@ public class TowerAI : MonoBehaviour
     private GameObject ord_pulseObject;
     private int chaosModOn = 0;
     private int whims_maxTargets;
-    private bool hasWater;
     private int nature_attackNumber;
 
     //gamemanager reference
     private GameManager gamemanager;
 
     //challenge states
-    private bool order_challenge = true;
-    private bool whimsical_challenge = true;
-    private bool water_challenge = true;
-    private bool lightning_challenge = true;
+    private bool order_challenge = false;
+    private bool whimsical_challenge = false;
+    private bool water_challenge = false;
+    private bool lightning_challenge = false;
 
     //audio
     public AudioSource shootSound;
@@ -82,10 +81,10 @@ public class TowerAI : MonoBehaviour
         rangeUpgradeCostMod = gamemanager.SkillTree["upgraderange"];
 
         ChallengeManager challengeManager = FindObjectOfType<ChallengeManager>();
-        order_challenge = !challengeManager.ChallengeDictionary["orderskill"];
-        whimsical_challenge = !challengeManager.ChallengeDictionary["whimsicalskill"];
-        water_challenge = !challengeManager.ChallengeDictionary["waterskill"];
-        lightning_challenge = !challengeManager.ChallengeDictionary["lightningskill"];
+        //order_challenge = !challengeManager.ChallengeDictionary["orderskill"];
+        //whimsical_challenge = !challengeManager.ChallengeDictionary["whimsicalskill"];
+        //water_challenge = !challengeManager.ChallengeDictionary["waterskill"];
+        //lightning_challenge = !challengeManager.ChallengeDictionary["lightningskill"];
 
         //sound
         shootSound.volume = gamemanager.sfxVolume;
@@ -173,21 +172,24 @@ public class TowerAI : MonoBehaviour
             //make sure the tower info is displayed to the left of the tower if it goes off screen to the right
             if (maxWidth - (transform.position.x + infoWidth + 1) < 0)
             {
-                towerUI.transform.localPosition = new Vector3(towerUI.transform.localPosition.x * -1, towerUI.transform.localPosition.y);
+                towerUI.transform.localPosition = new UnityEngine.Vector3(towerUI.transform.localPosition.x * -1, towerUI.transform.localPosition.y);
             }
 
             if (maxHeight - (transform.position.y + infoHeight / 2) < 0)
             {
-                towerUI.transform.localPosition = new Vector3(towerUI.transform.localPosition.x, towerUI.transform.localPosition.y - 2);
+                towerUI.transform.localPosition = new UnityEngine.Vector3(towerUI.transform.localPosition.x, towerUI.transform.localPosition.y - 2);
             }
 
             if (Mathf.Abs(minHeight) - (Mathf.Abs(transform.position.y) + infoHeight / 2) < 0)
             {
-                towerUI.transform.localPosition = new Vector3(towerUI.transform.localPosition.x, towerUI.transform.localPosition.y + 1);
+                towerUI.transform.localPosition = new UnityEngine.Vector3(towerUI.transform.localPosition.x, towerUI.transform.localPosition.y + 1);
             }
 
             infoSet = true;
-            rangeView.GetComponent<CircleCollider2D>().enabled = true;
+            if (stats.ImmutableElement != ElementTypes.Chaos && stats.ImmutableElement != ElementTypes.Water)
+            {
+                rangeView.GetComponent<CircleCollider2D>().enabled = true;
+            }
         }
     }
 
@@ -212,20 +214,20 @@ public class TowerAI : MonoBehaviour
             radius += .5f;
         }
 
-        rangeView.transform.localScale = new Vector3(radius * 2, radius * 2, 1);
+        rangeView.transform.localScale = new UnityEngine.Vector3(radius * 2, radius * 2, 1);
 
         if (stats.ImmutableElement == ElementTypes.Order)
         {
-            ord_pulseObject.transform.localScale = new Vector3(radius * 2, radius * 2, 1);
+            ord_pulseObject.transform.localScale = new UnityEngine.Vector3(radius * 2, radius * 2, 1);
         }
         else if (stats.ImmutableElement == ElementTypes.Whimsical)
         {
             whims_maxTargets = Mathf.FloorToInt(stats.Range / 3f);
 
             //whimsical challenge check
-            if (whimsical_challenge && radius > Vector3.Distance(new Vector3(-20, 0), transform.position) && radius > Vector3.Distance(new Vector3(20, 0), transform.position))
+            if (whimsical_challenge && radius > UnityEngine.Vector3.Distance(new UnityEngine.Vector3(-20, 0), transform.position) && radius > UnityEngine.Vector3.Distance(new UnityEngine.Vector3(20, 0), transform.position))
             {
-                FindObjectOfType<ChallengeManager>().SaveChallengeState("whimsicalskill");
+                //FindObjectOfType<ChallengeManager>().SaveChallengeState("whimsicalskill");
                 whimsical_challenge = false;
             }
         }
@@ -236,7 +238,7 @@ public class TowerAI : MonoBehaviour
     {
         if (timeSinceAttack >= stats.AttackSpeed)
         {
-            BulletAI newBullet = Instantiate(bullet, transform.position, Quaternion.identity, target.transform).GetComponent<BulletAI>();
+            BulletAI newBullet = Instantiate(bullet, transform.position, UnityEngine.Quaternion.identity, target.transform).GetComponent<BulletAI>();
             newBullet.BulletDamage = stats.Attack;
             ElementTypes[] ttypes = { stats.Element, stats.ImmutableElement };
             newBullet.BulletType = ttypes;
@@ -259,7 +261,7 @@ public class TowerAI : MonoBehaviour
 
                 if (numLightningBullets >= 10)
                 {
-                    FindObjectOfType<ChallengeManager>().SaveChallengeState("lightningskill");
+                    //FindObjectOfType<ChallengeManager>().SaveChallengeState("lightningskill");
                     lightning_challenge = false;
                 }
             }
@@ -290,7 +292,7 @@ public class TowerAI : MonoBehaviour
     }
 
     //toggle showing the tower's information and upgrades
-    private void ToggleTowerInfo()
+    public void ToggleTowerInfo()
     {
         if (gamemanager.otherTowerUIActive && !towerInfoOn)
         {
@@ -369,7 +371,7 @@ public class TowerAI : MonoBehaviour
             stats.Range - (stats.Range / 1.1) >= rangeMod
         )
         {
-            FindObjectOfType<ChallengeManager>().SaveChallengeState("waterskill");
+            //FindObjectOfType<ChallengeManager>().SaveChallengeState("waterskill");
             water_challenge = false;
         }
     }
@@ -379,8 +381,8 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= attackUpgradeCost)
         {
-            currency.CurrentCurrency -= (ulong)attackUpgradeCost;
-            attackUpgradeCost += attackUpgradeCost * attackUpgradeCostMod;
+            currency.CurrentCurrency -= attackUpgradeCost;
+            attackUpgradeCost = new BigInteger((double)attackUpgradeCost * attackUpgradeCostMod);
 
             stats.Attack += attackMod;
             
@@ -393,8 +395,8 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= ASUpgradeCost)
         {
-            currency.CurrentCurrency -= (ulong)ASUpgradeCost;
-            ASUpgradeCost += ASUpgradeCost * attackspeedUpgradeCostMod;
+            currency.CurrentCurrency -= ASUpgradeCost;
+            ASUpgradeCost = new BigInteger((double)ASUpgradeCost * attackspeedUpgradeCostMod);
 
             ASUpgradeNumber++;
             stats.AttackSpeed = GetAttackSpeedValue(attackSpeedMod, ASUpgradeNumber);
@@ -408,8 +410,8 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= rangeUpgradeCost)
         {
-            currency.CurrentCurrency -= (ulong)rangeUpgradeCost;
-            rangeUpgradeCost += rangeUpgradeCost * rangeUpgradeCostMod;
+            currency.CurrentCurrency -= rangeUpgradeCost;
+            rangeUpgradeCost = new BigInteger((double)rangeUpgradeCost * rangeUpgradeCostMod);
 
             stats.Range += rangeMod;
             ChangeTowerRange(stats.Range);
@@ -423,10 +425,10 @@ public class TowerAI : MonoBehaviour
     {
         if (currency.CurrentCurrency >= attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost)
         {
-            currency.CurrentCurrency -= (ulong)(attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost);
-            attackUpgradeCost += attackUpgradeCost * attackUpgradeCostMod;
-            ASUpgradeCost += ASUpgradeCost * attackspeedUpgradeCostMod;
-            rangeUpgradeCost += rangeUpgradeCost * rangeUpgradeCostMod;
+            currency.CurrentCurrency -= attackUpgradeCost + ASUpgradeCost + rangeUpgradeCost;
+            attackUpgradeCost = new BigInteger((double)attackUpgradeCost * attackUpgradeCostMod);
+            ASUpgradeCost = new BigInteger((double)ASUpgradeCost * attackspeedUpgradeCostMod);
+            rangeUpgradeCost = new BigInteger((double)rangeUpgradeCost * rangeUpgradeCostMod);
 
             stats.Attack += attackMod;
             ASUpgradeNumber++;
@@ -548,7 +550,7 @@ public class TowerAI : MonoBehaviour
             {
                 if (multiEnemiesInRange.Count > 0 && multiEnemiesInRange[i] != null && i < whims_maxTargets)
                 {
-                    BulletAI newBullet = Instantiate(bullet, transform.position, Quaternion.identity, multiEnemiesInRange[i].transform).GetComponent<BulletAI>();
+                    BulletAI newBullet = Instantiate(bullet, transform.position, UnityEngine.Quaternion.identity, multiEnemiesInRange[i].transform).GetComponent<BulletAI>();
                     newBullet.BulletDamage = stats.Attack;
                     ElementTypes[] ttypes = { stats.Element, stats.ImmutableElement };
                     newBullet.BulletType = ttypes;
@@ -597,7 +599,7 @@ public class TowerAI : MonoBehaviour
             //order challenge check
             if (order_challenge && numEnemies >= 10)
             {
-                FindObjectOfType<ChallengeManager>().SaveChallengeState("orderskill");
+                //FindObjectOfType<ChallengeManager>().SaveChallengeState("orderskill");
                 order_challenge = false;
             }
 
@@ -650,10 +652,10 @@ public class TowerAI : MonoBehaviour
     {
         //send 2d raycast in 4 cardinal directions
         RaycastHit2D[] hits = new RaycastHit2D[4];
-        hits[0] = Physics2D.Raycast(transform.position, Vector2.up, 1);
-        hits[1] = Physics2D.Raycast(transform.position, Vector2.down, 1);
-        hits[2] = Physics2D.Raycast(transform.position, Vector2.left, 1);
-        hits[3] = Physics2D.Raycast(transform.position, Vector2.right, 1);
+        hits[0] = Physics2D.Raycast(transform.position, UnityEngine.Vector2.up, 1);
+        hits[1] = Physics2D.Raycast(transform.position, UnityEngine.Vector2.down, 1);
+        hits[2] = Physics2D.Raycast(transform.position, UnityEngine.Vector2.left, 1);
+        hits[3] = Physics2D.Raycast(transform.position, UnityEngine.Vector2.right, 1);
         TowerAI hitTower;
 
         //foreach hit if the hit isnt null check its distance to this
@@ -684,7 +686,7 @@ public class TowerAI : MonoBehaviour
         int halfRange = range / 2;
         for (int i = -halfRange; i <= halfRange; i++)
         {
-            hits[i + halfRange] = Physics2D.RaycastAll(transform.position + new Vector3(i, halfRange, 0), Vector2.down, range - 1);
+            hits[i + halfRange] = Physics2D.RaycastAll(transform.position + new UnityEngine.Vector3(i, halfRange, 0), UnityEngine.Vector2.down, range - 1);
             //Debug.DrawRay(transform.position + new Vector3(i, halfRange, 0), Vector2.down * (range - 1), Color.white, 1);
         }
 
@@ -703,7 +705,6 @@ public class TowerAI : MonoBehaviour
                     hits[i][j].collider.gameObject != gameObject // make sure it aint this one
                 )
                 {
-                    hitTower.hasWater = true;
                     hitTower.UpdateTowerInfo();
                     //Debug.Log(hitTower.name);
                 }
@@ -729,5 +730,11 @@ public class TowerAI : MonoBehaviour
     {
         get { return shootSound; }
         set { shootSound = value; }
+    }
+
+    //proprty for tower info
+    public bool TowerInfoOn
+    {
+        get { return towerInfoOn; }
     }
 }

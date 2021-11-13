@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Numerics;
 
 //TODO
 //figure out how to multiply a number by a big number
@@ -12,13 +13,14 @@ using UnityEngine.UI;
 public class CurrencyManager : MonoBehaviour
 {
     //currency variables
-    //private BigNumber maxCurrency;
-    //private BigNumber currentCurrency;
+    private BigInteger maxCurrency;
+    private BigInteger currentCurrency;
+    private BigInteger maxCurrencyModifier;
 
-    private ulong maxCurrency;
-    private ulong currentCurrency;
+    //private ulong maxCurrency;
+    //private ulong currentCurrency;
     private float currencyTick;
-    private uint maxCurrencyModifier;
+    //private uint maxCurrencyModifier;
 
     private float currencyGainRate;
     private float percentGainPerSecond = .01f;
@@ -43,7 +45,7 @@ public class CurrencyManager : MonoBehaviour
         currentCurrency = 0;
         currencyTick = 0;
         maxCurrencyModifier = 2;
-        percentGainPerSecond = gameManager.SkillTree["money1"];
+        percentGainPerSecond = gameManager.SkillTree["money3"];
 
         SetGainRate(percentGainPerSecond);
 
@@ -59,21 +61,11 @@ public class CurrencyManager : MonoBehaviour
         }
 
         //increase currentCurrency by gain rate
-        //currentCurrency.IncreaseBy(Mathf.FloorToInt(currencyGainRate));
-
-        ////check if current currency exceeds max currency
-        //if (currentCurrency.IsGreaterThan(maxCurrency))
-        //{
-        //    maxCurrency.MultiplyBy(2);
-        //    IncreaseMaxCurrency(maxCurrency);
-        //}
-
-        //increase currentCurrency by gain rate
         currencyTick += currencyGainRate;
         if (currencyTick > 1)
         {
-            currentCurrency += (uint)Mathf.FloorToInt(currencyTick);
-            currencyTick -= (uint)Mathf.FloorToInt(currencyTick);
+            currentCurrency += Mathf.FloorToInt(currencyTick);
+            currencyTick -= Mathf.FloorToInt(currencyTick);
         }
 
         //check if current currency exceeds max currency
@@ -87,16 +79,16 @@ public class CurrencyManager : MonoBehaviour
     }
 
     //property for the current currency amount
-    public ulong CurrentCurrency
+    public BigInteger CurrentCurrency
     {
         get { return currentCurrency; }
         set { currentCurrency = value; }
     }
 
-    private void UpdateCurrencyBar(ulong amount, ulong cap)
+    private void UpdateCurrencyBar(BigInteger amount, BigInteger cap)
     {
         //change bar
-        currencyBar.rectTransform.sizeDelta = new Vector2(((float)amount / cap * barFullSize), barHeight);
+        currencyBar.rectTransform.sizeDelta = new UnityEngine.Vector2((float)amount / (float)cap * barFullSize, barHeight);
 
         //change text
         if (amount < 1000000000)
@@ -110,15 +102,7 @@ public class CurrencyManager : MonoBehaviour
     }
 
     //increase max currency
-    //public void IncreaseMaxCurrency(BigNumber increase)
-    //{
-    //    maxCurrency.IncreaseBy(increase);
-
-    //    SetGainRate(percentGainPerSecond);
-    //}
-
-    //increase max currency
-    public void IncreaseMaxCurrency(ulong increase)
+    public void IncreaseMaxCurrency(BigInteger increase)
     {
         maxCurrency += increase;
 
@@ -128,6 +112,6 @@ public class CurrencyManager : MonoBehaviour
     //calculate currency gain rate
     public void SetGainRate(float percentGain)
     {
-        currencyGainRate = maxCurrency * percentGain * Time.fixedDeltaTime;
+        currencyGainRate = (float)maxCurrency * percentGain * Time.fixedDeltaTime;
     }
 }

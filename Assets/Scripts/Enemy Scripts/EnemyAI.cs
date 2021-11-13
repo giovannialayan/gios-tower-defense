@@ -64,12 +64,12 @@ public class EnemyAI : MonoBehaviour
 
     //challenge variables
     ChallengeManager challengeManager;
-    private bool chaos_challenge = true;
-    private bool fire_challenge = true;
-    private bool nature_challenge = true;
+    private bool chaos_challenge = false;
+    private bool fire_challenge = false;
+    private bool nature_challenge = false;
     private Vector3 nature_challenge_pos;
     private bool firstTimeStunned = true;
-    private bool earth_challenge = true;
+    private bool earth_challenge = false;
 
     //enemypedia variables
     private bool cur_found = false;
@@ -93,6 +93,9 @@ public class EnemyAI : MonoBehaviour
     //audio
     public GameObject enemyDeathSound;
     private float deathSoundVolume = 1;
+
+    //element damage multiplier
+    private float elementDamageMultiplier = 2;
 
     // Start is called before the first frame update
     void Start()
@@ -127,9 +130,10 @@ public class EnemyAI : MonoBehaviour
         slowAmount = 1;
 
         challengeManager = FindObjectOfType<ChallengeManager>();
-        chaos_challenge = !challengeManager.ChallengeDictionary["chaosskill"];
-        fire_challenge = !challengeManager.ChallengeDictionary["fireskill"];
-        nature_challenge = !challengeManager.ChallengeDictionary["natureskill"];
+        //chaos_challenge = !challengeManager.ChallengeDictionary["chaosskill"];
+        //fire_challenge = !challengeManager.ChallengeDictionary["fireskill"];
+        //nature_challenge = !challengeManager.ChallengeDictionary["natureskill"];
+        //earth_challenge = !challengeManager.ChallengeDictionary["earthskill"];
 
         //enemypedia
         cur_found = challengeManager.Enemypedia["cur"];
@@ -307,7 +311,7 @@ public class EnemyAI : MonoBehaviour
 
                         if (challengeManager.earthChallengeCounter.Count >= 10)
                         {
-                            challengeManager.SaveChallengeState("earthskill");
+                            //challengeManager.SaveChallengeState("earthskill");
                             earth_challenge = false;
                         }
                     }
@@ -346,7 +350,7 @@ public class EnemyAI : MonoBehaviour
 
                         if (challengeManager.earthChallengeCounter.Count >= 10)
                         {
-                            challengeManager.SaveChallengeState("earthskill");
+                            //challengeManager.SaveChallengeState("earthskill");
                             earth_challenge = false;
                         }
                     }
@@ -405,7 +409,7 @@ public class EnemyAI : MonoBehaviour
 
                 //increase speed and attack based on missing health
                 case EnemyClass.Assassin:
-                    moveSpeed = assassin_original_speed + ((maxHealth * 2 - health * 3) / maxHealth) + 2; //as health approaches 0, speed approaches +3
+                    moveSpeed = assassin_original_speed + ((maxHealth * 5 - health * 6) / maxHealth) + 1; //as health approaches 0, speed approaches +6
                     realSpeed = moveSpeed;
                     attack = assassin_original_attack + ((maxHealth * enemyWave * assassinMultiplierSkill - health * (enemyWave * assassinMultiplierSkill - 1)) / maxHealth); //health go boo attack go woo
                     break;
@@ -471,7 +475,7 @@ public class EnemyAI : MonoBehaviour
 
                     if (challengeManager.chaosChallengeCounter >= 10)
                     {
-                        challengeManager.SaveChallengeState("chaosskill");
+                        //challengeManager.SaveChallengeState("chaosskill");
                         chaos_challenge = false;
                     }
                 }
@@ -479,14 +483,14 @@ public class EnemyAI : MonoBehaviour
                 //fire challenge
                 if (fire_challenge && enemyClass == EnemyClass.Knight && beforeHealth == maxHealth)
                 {
-                    challengeManager.SaveChallengeState("fireskill");
+                    //challengeManager.SaveChallengeState("fireskill");
                     fire_challenge = false;
                 }
 
                 //nature challenge
                 if (nature_challenge && nature_challenge_pos == transform.position)
                 {
-                    challengeManager.SaveChallengeState("natureskill");
+                    //challengeManager.SaveChallengeState("natureskill");
                     nature_challenge = false;
                 }
 
@@ -552,7 +556,8 @@ public class EnemyAI : MonoBehaviour
 
                 //Debug.LogError("destroyed");
                 //Debug.LogError(currency);
-                Instantiate(enemyDeathSound);
+                AudioSource deathsound = Instantiate(enemyDeathSound).GetComponent<AudioSource>();
+                deathsound.volume = deathSoundVolume;
                 Destroy(transform.gameObject);
                 currency.CurrentCurrency += (uint)Mathf.FloorToInt(killWorth);
             }
@@ -687,56 +692,56 @@ public class EnemyAI : MonoBehaviour
             case ElementTypes.Lightning:
                 if (types[0] == ElementTypes.Earth || types[1] == ElementTypes.Earth)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
             case ElementTypes.Fire:
                 if (types[0] == ElementTypes.Water || types[1] == ElementTypes.Water)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
             case ElementTypes.Whimsical:
                 if (types[0] == ElementTypes.Nature || types[1] == ElementTypes.Nature)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
             case ElementTypes.Order:
                 if (types[0] == ElementTypes.Chaos || types[1] == ElementTypes.Chaos)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
             case ElementTypes.Nature:
                 if (types[0] == ElementTypes.Fire || types[1] == ElementTypes.Fire)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
             case ElementTypes.Earth:
                 if (types[0] == ElementTypes.Whimsical || types[1] == ElementTypes.Whimsical)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
             case ElementTypes.Chaos:
                 if (types[0] == ElementTypes.Order || types[1] == ElementTypes.Order)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
             case ElementTypes.Water:
                 if (types[0] == ElementTypes.Lightning || types[1] == ElementTypes.Lightning)
                 {
-                    damage *= 1.5f;
+                    damage *= elementDamageMultiplier;
                 }
                 break;
 
@@ -747,8 +752,7 @@ public class EnemyAI : MonoBehaviour
         float beforeHealth = health;
         health -= damage;
         float preChaosHealth = health;
-
-
+        
         if (statusEffect == 3)
         {
             health = beforeHealth - (beforeHealth - health) * .1f;
@@ -786,7 +790,7 @@ public class EnemyAI : MonoBehaviour
 
             //increase speed and attack based on missing health
             case EnemyClass.Assassin:
-                moveSpeed = assassin_original_speed + ((maxHealth * 2 - health * 3) / maxHealth) + 2; //as health approaches 0, speed approaches +3
+                moveSpeed = assassin_original_speed + ((maxHealth * 5 - health * 6) / maxHealth) + 1; //as health approaches 0, speed approaches +6
                 realSpeed = moveSpeed;
                 attack = assassin_original_attack + ((maxHealth * enemyWave * assassinMultiplierSkill - health * (enemyWave * assassinMultiplierSkill - 1)) / maxHealth); //health go boo attack go woo
                 break;
@@ -850,7 +854,7 @@ public class EnemyAI : MonoBehaviour
 
                 if (challengeManager.chaosChallengeCounter >= 10)
                 {
-                    challengeManager.SaveChallengeState("chaosskill");
+                    //challengeManager.SaveChallengeState("chaosskill");
                     chaos_challenge = false;
                 }
             }
@@ -858,14 +862,14 @@ public class EnemyAI : MonoBehaviour
             //fire challenge
             if (fire_challenge && enemyClass == EnemyClass.Knight && beforeHealth == maxHealth)
             {
-                challengeManager.SaveChallengeState("fireskill");
+                //challengeManager.SaveChallengeState("fireskill");
                 fire_challenge = false;
             }
 
             //nature challenge
             if (nature_challenge && nature_challenge_pos == transform.position)
             {
-                challengeManager.SaveChallengeState("natureskill");
+                //challengeManager.SaveChallengeState("natureskill");
                 nature_challenge = false;
             }
 
@@ -931,7 +935,8 @@ public class EnemyAI : MonoBehaviour
 
             //Debug.LogError("destroyed");
             //Debug.LogError(currency);
-            Instantiate(enemyDeathSound);
+            AudioSource deathsound = Instantiate(enemyDeathSound).GetComponent<AudioSource>();
+            deathsound.volume = deathSoundVolume;
             Destroy(transform.gameObject);
             currency.CurrentCurrency += (uint)Mathf.FloorToInt(killWorth);
         }

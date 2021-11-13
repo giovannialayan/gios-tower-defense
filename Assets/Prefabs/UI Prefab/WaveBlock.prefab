@@ -59,7 +59,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.4, g: 0, b: 0.17254902, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -230,7 +230,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'wave #0
+  m_Text: '<color=#ffffffff>wave #0
 
     0 enemies
 
@@ -238,12 +238,17 @@ MonoBehaviour:
 
     0 health
 
-    0 speed
-
     0
-    money
+    speed
 
-    the elements within are'
+    0 money
+
+    the elements within are
+
+    <color=#999999ff>chaos</color>,
+    <color=#eeeeeeff>order</color>, <color=#ff0000ff>fire</color>, <color=#00ddffff>water</color>,
+    <color=#ddaa10ff>earth</color>, <color=#dddd33ff>lightning</color>, <color=#ff77ffff>whimsical</color>,
+    <color=#00ff00ff>nature</color> </color>'
 --- !u!1 &4526818654894043639
 GameObject:
   m_ObjectHideFlags: 0

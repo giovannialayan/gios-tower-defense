@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
     //private Transform[,] towerLookUp;
 
     //save files
-    private string options = "saves\\options.txt";
+    private string options = "saves\\options.ldata";
     private StreamWriter writer = null;
     private StreamReader reader = null;
 
@@ -55,8 +55,8 @@ public class GameManager : MonoBehaviour
 
     //skill tree
     private int skillPoints = 0;
-    private string skillTreeFile = "saves\\skilltree.txt";
-    private string skillPointFile = "saves\\skillpoints.txt";
+    private string skillTreeFile = "saves\\skilltree.ldata";
+    private string skillPointFile = "saves\\skillpoints.ldata";
     private Dictionary<string, float> skillTreeValues;
     private int skillPointCounter = 0;
     public Image skillPointImage;
@@ -65,6 +65,9 @@ public class GameManager : MonoBehaviour
 
     //tower ui active
     public bool otherTowerUIActive { get; set; }
+
+    //dont show map pref (this just has to be here for saving options to file)
+    private bool dontShowMapPref;
 
     // Start is called before the first frame update
     void Awake()
@@ -87,6 +90,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         paused = false;
+        Time.timeScale = 1;
 
         waveManager.AddWaves(numWaves);
 
@@ -94,6 +98,10 @@ public class GameManager : MonoBehaviour
         {
             //mapGenerator.BinaryTreeMazeGen();
             mapGenerator.DepthFirstSearchMazeGen();
+        }
+        else
+        {
+            mapGenerator.GeneratePresetMap(Random.Range(0, 10));
         }
 
         skillPointNotifText = skillPointImage.transform.GetChild(0).GetComponent<Text>();
@@ -221,6 +229,16 @@ public class GameManager : MonoBehaviour
             pauseParent.transform.GetChild(8).gameObject.SetActive(true);
             paused = true;
             Time.timeScale = 0;
+
+            TowerAI[] towers = FindObjectsOfType<TowerAI>();
+            foreach (TowerAI tower in towers)
+            {
+                if (tower.TowerInfoOn)
+                {
+                    tower.ToggleTowerInfo();
+                    otherTowerUIActive = false;
+                }
+            }
         }
         else if (!baseManager.IsAlive && paused)
         {
@@ -243,6 +261,16 @@ public class GameManager : MonoBehaviour
             paused = true;
             pauseParent.SetActive(true);
             Time.timeScale = 0;
+
+            TowerAI[] towers = FindObjectsOfType<TowerAI>();
+            foreach (TowerAI tower in towers)
+            {
+                if (tower.TowerInfoOn)
+                {
+                    tower.ToggleTowerInfo();
+                    otherTowerUIActive = false;
+                }
+            }
         }
     }
 
@@ -340,6 +368,7 @@ public class GameManager : MonoBehaviour
         writer.WriteLine("randommap=" + randomizeMap + ";");
         writer.WriteLine("musicvolume=" + musicSource.volume + ";");
         writer.WriteLine("sfxvolume=" + sfxVolume + ";");
+        writer.WriteLine("dontshowmappref=" + dontShowMapPref + ';');
 
         if (writer != null)
         {
@@ -357,6 +386,7 @@ public class GameManager : MonoBehaviour
             writer.WriteLine("randommap=" + false + ";");
             writer.WriteLine("musicvolume=" + 0.25 + ";");
             writer.WriteLine("sfxvolume=" + 0.25 + ";");
+            writer.WriteLine("dontshowmappref=" + false + ';');
 
             if (writer != null)
             {
@@ -381,6 +411,9 @@ public class GameManager : MonoBehaviour
         sfxVolume = soundEffectSlider.value;
         soundEffectText.text = "<color=ff6600>" + Mathf.Floor(musicSlider.value * 100) + "%</color> sound effect volume";
         aha.volume = sfxVolume;
+
+        //dont show map pref
+        dontShowMapPref = bool.Parse(GetVariableFromText(optionsText, "dontshowmappref=", ';'));
 
         if (reader != null)
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Numerics;
 
 public class ElementShop : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class ElementShop : MonoBehaviour
     public CurrencyManager currencyManager;
 
     //cost of elements
-    private float elementCost;
+    private BigInteger elementCost;
     private float elementCostModifier;
 
     //prefabs for elements
@@ -32,7 +33,7 @@ public class ElementShop : MonoBehaviour
 
     //list of elements in inventory
     private List<Transform> inventory;
-    private Vector3 inventoryZero;
+    private UnityEngine.Vector3 inventoryZero;
 
     //gamemanager
     public GameManager gameManager;
@@ -43,7 +44,7 @@ public class ElementShop : MonoBehaviour
         elementCost = 5;
         elementCostModifier = 1.5f;
         UpdateCurrencyText(elementCost);
-        inventoryZero = new Vector3(3.265f, 10.32f, 0);
+        inventoryZero = new UnityEngine.Vector3(3.265f, 10.32f, 0);
         inventory = new List<Transform>();
     }
 
@@ -100,17 +101,17 @@ public class ElementShop : MonoBehaviour
         if (currencyManager.CurrentCurrency >= elementCost && inventory.Count < 18)
         {
             //remove currency required from player and increase element cost
-            currencyManager.CurrentCurrency -= (uint)Mathf.FloorToInt(elementCost);
-            elementCost *= elementCostModifier;
+            currencyManager.CurrentCurrency -= elementCost;
+            elementCost = new BigInteger((double)elementCost * elementCostModifier);
             UpdateCurrencyText(elementCost);
 
             //spawn element in the correct position in the inventory
             int invlen = inventory.Count;
-            inventory.Add(Instantiate(elementObject, inventoryZero, Quaternion.identity).transform);
-            inventory[invlen].position = inventoryZero + new Vector3(invlen * 1.094f, (invlen / 6) * -1.094f, 0);
+            inventory.Add(Instantiate(elementObject, inventoryZero, UnityEngine.Quaternion.identity).transform);
+            inventory[invlen].position = inventoryZero + new UnityEngine.Vector3(invlen * 1.094f, (invlen / 6) * -1.094f, 0);
             if (invlen >= 6)
             {
-                inventory[invlen].position = new Vector3(inventoryZero.x + (invlen % 6) * 1.094f, inventory[invlen].position.y, 0);
+                inventory[invlen].position = new UnityEngine.Vector3(inventoryZero.x + (invlen % 6) * 1.094f, inventory[invlen].position.y, 0);
             }
 
             //Debug.Log(inventoryZero.x + "+ ((" + invlen + " - 1) % 6) * 1.094 = " + (inventoryZero.x + (invlen % 6) * 1.094f));
@@ -127,7 +128,7 @@ public class ElementShop : MonoBehaviour
     }
 
     //change text
-    private void UpdateCurrencyText(float amount)
+    private void UpdateCurrencyText(BigInteger amount)
     {
         currencyText.text = "element cost: ";
 
@@ -137,8 +138,7 @@ public class ElementShop : MonoBehaviour
         }
         else
         {
-            string temp = amount.ToString();
-            currencyText.text += string.Format("{0}.{1}{2} e{3}", temp[0], temp[1], temp[2], temp.Length - 1);
+            currencyText.text += amount.ToString("0." + new string('0', 2) + "e0");
         }
 
         //currencyText.transform.position = RectTransformUtility.WorldToScreenPoint(Camera.main, transform.position + new Vector3(0, -.75f, 0));
@@ -169,10 +169,10 @@ public class ElementShop : MonoBehaviour
 
         for (int i = 0; i < inventory.Count; i++)
         {
-            inventory[i].position = inventoryZero + new Vector3(i * 1.094f, (i / 6) * -1.094f, 0);
+            inventory[i].position = inventoryZero + new UnityEngine.Vector3(i * 1.094f, (i / 6) * -1.094f, 0);
             if (i >= 6)
             {
-                inventory[i].position = new Vector3(inventoryZero.x + (i % 6) * 1.094f, inventory[i].position.y, 0);
+                inventory[i].position = new UnityEngine.Vector3(inventoryZero.x + (i % 6) * 1.094f, inventory[i].position.y, 0);
             }
 
             //change origin

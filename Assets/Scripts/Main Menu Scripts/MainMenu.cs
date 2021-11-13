@@ -17,9 +17,9 @@ public class MainMenu : MonoBehaviour
     private StreamReader reader = null;
 
     //skills
-    private string skillsFile = "saves\\skills.txt";
-    private string skillTreeFile = "saves\\skilltree.txt";
-    private string skillPointFile = "saves\\skillpoints.txt";
+    private string skillsFile = "saves\\skills.ldata";
+    private string skillTreeFile = "saves\\skilltree.ldata";
+    private string skillPointFile = "saves\\skillpoints.ldata";
     public Transform skillsParent;
     private Dictionary<string, float> skillTreeValues;
     private Dictionary<string, int> skillTreeCosts;
@@ -27,9 +27,10 @@ public class MainMenu : MonoBehaviour
     private Dictionary<string, float> skillTreeMax;
     private int skillPoints = 0;
     public Text skillPointUI;
+    public Transform skillTreeMaskParent;
 
     //options
-    private string options = "saves\\options.txt";
+    private string options = "saves\\options.ldata";
     public bool randomizeMap = false;
     public Toggle randomMapToggle;
     public Slider musicSlider;
@@ -45,7 +46,15 @@ public class MainMenu : MonoBehaviour
     private bool[] wasFocused = new bool[8];
     public Transform[] enemypedia = new Transform[8]; //0 = cur, 1 = knight, 2 = monk, 3 = assassin, 4 = paladin, 5 = armorer, 6 = succubus, 7 = warlock
     public GameObject enemypediaParent;
-    private string enemypediaFile = "saves\\enemypedia.txt";
+    private string enemypediaFile = "saves\\enemypedia.ldata";
+
+    //lore parent
+    public GameObject loreParent;
+
+    //map preferences
+    private bool dontShowMapPref = false;
+    public Transform mapPrefParent;
+    public Toggle dontShowMapPrefToggle;
 
     // Start is called before the first frame update
     void Start()
@@ -58,6 +67,7 @@ public class MainMenu : MonoBehaviour
         randomMapToggle.onValueChanged.AddListener(delegate { ToggleRandomMap(randomMapToggle); });
         musicSlider.onValueChanged.AddListener(delegate { ChangeMusicVolume(musicSlider, musicSource, musicText); });
         soundEffectSlider.onValueChanged.AddListener(delegate { ChangeSFXVolume(soundEffectSlider, soundEffectText); });
+        dontShowMapPrefToggle.onValueChanged.AddListener(delegate { ChangeDontShowAgain(dontShowMapPrefToggle); });
 
         //enemypedia
         ReadEnemypediaFromFile();
@@ -75,9 +85,9 @@ public class MainMenu : MonoBehaviour
         skillTreeValues = new Dictionary<string, float>();
         skillTreeIncrement = new Dictionary<string, float>();
         skillTreeMax = new Dictionary<string, float>();
-        skillTreeIncrement.Add("money1", .005f);
+        skillTreeIncrement.Add("money1", -1);
         skillTreeIncrement.Add("money2", 10);
-        skillTreeIncrement.Add("money3", -1);
+        skillTreeIncrement.Add("money3", .005f);
         skillTreeIncrement.Add("money4", -.05f);
         skillTreeIncrement.Add("base1", 1);
         skillTreeIncrement.Add("base2", 1);
@@ -94,7 +104,8 @@ public class MainMenu : MonoBehaviour
         skillTreeIncrement.Add("upgradeattackspeed", -.05f);
         skillTreeIncrement.Add("upgradeattack", -.05f);
 
-        skillTreeMax.Add("money3", 1);
+        skillTreeMax.Add("money1", 1);
+        skillTreeMax.Add("money3", .25f);
         skillTreeMax.Add("money4", 1.25f);
         skillTreeMax.Add("enemywarlock", .05f);
         skillTreeMax.Add("enemymonk", .5f);
@@ -111,6 +122,11 @@ public class MainMenu : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            skillPoints += 100;
+        }
+
         //go through tutorial
         if (tutorialOn && Input.anyKeyDown)
         {
@@ -151,7 +167,14 @@ public class MainMenu : MonoBehaviour
     //starts endless mode
     public void StartEndlessMode()
     {
-        SceneManager.LoadScene("Endless_Level");
+        if (dontShowMapPref)
+        {
+            SceneManager.LoadScene("Endless_Level");
+        }
+        else
+        {
+            mapPrefParent.gameObject.SetActive(true);
+        }
     }
 
     //opens tutorial
@@ -184,6 +207,8 @@ public class MainMenu : MonoBehaviour
     //sets skills from file save
     private void ReadSkillsFromFile()
     {
+        return;
+
         //if the file is missing create it with default values
         if (!File.Exists(skillsFile))
         {
@@ -270,6 +295,7 @@ public class MainMenu : MonoBehaviour
         writer.WriteLine("randommap=" + randomizeMap + ";");
         writer.WriteLine("musicvolume=" + musicSource.volume + ";");
         writer.WriteLine("sfxvolume=" + sfxVolume + ";");
+        writer.WriteLine("dontshowmappref=" + dontShowMapPref + ";");
 
         if (writer != null)
         {
@@ -287,6 +313,7 @@ public class MainMenu : MonoBehaviour
             writer.WriteLine("randommap=" + false + ";");
             writer.WriteLine("musicvolume=" + 0.25 + ";");
             writer.WriteLine("sfxvolume=" + 0.25 + ";");
+            writer.WriteLine("dontshowmappref=" + false + ";");
 
             if (writer != null)
             {
@@ -310,6 +337,10 @@ public class MainMenu : MonoBehaviour
         soundEffectSlider.value = float.Parse(GetVariableFromText(optionsText, "sfxvolume=", ';'));
         sfxVolume = soundEffectSlider.value;
         soundEffectText.text = "<color=ff6600>" + Mathf.Floor(musicSlider.value * 100) + "%</color> sound effect volume";
+
+        //dont show map pref
+        dontShowMapPref = bool.Parse(GetVariableFromText(optionsText, "dontshowmappref=", ';'));
+        dontShowMapPrefToggle.isOn = dontShowMapPref;
 
         if (reader != null)
         {
@@ -367,9 +398,7 @@ public class MainMenu : MonoBehaviour
     //changes wave values of input panel
     public void CalculateEnemyWave(InputField input, Text panel, EnemyClass enemyClass)
     {
-        int waveNum;
-
-        if (int.TryParse(input.text, out waveNum))
+        if (int.TryParse(input.text, out int waveNum))
         {
             int waveNumberMod = waveNum + Mathf.FloorToInt(waveNum / 10f);
 
@@ -377,42 +406,48 @@ public class MainMenu : MonoBehaviour
             {
                 case EnemyClass.Cur:
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}", 
-                        waveNum, waveNumberMod * 5, waveNumberMod * 2f, waveNumberMod * 1.5f, 1.05f, waveNumberMod * 2f);
+                        waveNum, waveNumberMod * 2, waveNumberMod * 3f, waveNumberMod * 1.5f, 1.05f, waveNumberMod * 2f);
                     break;
 
                 case EnemyClass.Knight:
+                    int numKnights = Mathf.FloorToInt(waveNumberMod / 5f);
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}\nbulky and packs a punch but rather slow.",
-                        waveNum, waveNumberMod * 1, waveNumberMod * 5f, waveNumberMod * 3f, .525f, waveNumberMod * 10f);
+                        waveNum, numKnights < 1 ? 1 : numKnights, waveNumberMod * 6f, waveNumberMod * 3f, .525f, waveNumberMod * 20f);
                     break;
 
                 case EnemyClass.Monk:
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}\nsmall and fast, there are a lot of them.",
-                        waveNum, waveNumberMod * 10, waveNumberMod * .5f, waveNumberMod * .5f, 1.575f, waveNumberMod * 1f);
+                        waveNum, waveNumberMod * 4, waveNumberMod * 1f, waveNumberMod * .5f, 1.575f, waveNumberMod * 1f);
                     break;
 
                 case EnemyClass.Assassin:
+                    int numAssassins = Mathf.FloorToInt(waveNumberMod / 1.5f);
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}\nspeed and attack scale with missing health.",
-                        waveNum, waveNumberMod * 3, waveNumberMod * 4f, waveNumberMod * 2f, 1f, waveNumberMod * 3.5f);
+                        waveNum, numAssassins < 1 ? 1 : numAssassins, waveNumberMod * 4f, waveNumberMod * 2f, 1f, waveNumberMod * 6.5f);
                     break;
 
                 case EnemyClass.Paladin:
+                    int numPaladins = Mathf.FloorToInt(waveNumberMod / 1.5f);
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}\nafter being hit 3 times the paladin will gain a shield that blocks all damage for 5 seconds and have increased speed.",
-                        waveNum, waveNumberMod * 3, waveNumberMod * 3f, waveNumberMod * 1.5f, 1.05f, waveNumberMod * 3.5f);
+                        waveNum, numPaladins < 1 ? 1 : numPaladins, waveNumberMod * 4f, waveNumberMod * 1.5f, 1.05f, waveNumberMod * 6.5f);
                     break;
 
                 case EnemyClass.Armorer:
+                    int numArmorers = Mathf.FloorToInt(waveNumberMod / 2f);
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}\nthe armorer takes less damage the further away it is from the tower targeting it.",
-                        waveNum, waveNumberMod * 4, waveNumberMod * 3f, waveNumberMod * 3f, 1.1f, waveNumberMod * 2.5f);
+                        waveNum, numArmorers < 1 ? 1 : numArmorers, waveNumberMod * 4f, waveNumberMod * 3f, 1.1f, waveNumberMod * 8f);
                     break;
 
                 case EnemyClass.Succubus:
+                    int numSuccubi = Mathf.FloorToInt(waveNumberMod / 2f);
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}",
-                        waveNum, waveNumberMod * 2, waveNumberMod * 3f, waveNumberMod * 4f, 1.32f, waveNumberMod * 5f);
+                        waveNum, numSuccubi < 1 ? 1 : numSuccubi, waveNumberMod * 4f, waveNumberMod * 4f, 1.32f, waveNumberMod * 8f);
                     break;
 
                 case EnemyClass.Warlock:
+                    int numWarlocks = Mathf.FloorToInt(waveNumberMod / 1.5f);
                     panel.text = string.Format("values on wave {0}\nquantity: {1}\n  health: {2}\n  attack: {3}\n   speed: {4}\n      er: {5}\nthe warock doesnt take damage if the attack deals less than 20% of its health.",
-                        waveNum, waveNumberMod * 6, waveNumberMod * 2f, waveNumberMod * 1.5f, 1.2f, waveNumberMod * 1.7f);
+                        waveNum, numWarlocks < 1 ? 1 : numWarlocks, waveNumberMod * 3f, waveNumberMod * 1.5f, 1.2f, waveNumberMod * 6.5f);
                     break;
             }
         }
@@ -455,30 +490,93 @@ public class MainMenu : MonoBehaviour
         //knight
         bool knightPanelActive = bool.Parse(GetVariableFromText(enemyText, "knight=", ';'));
         enemypedia[1].GetChild(4).gameObject.SetActive(!knightPanelActive);
+        skillsParent.GetChild(4).GetChild(5).GetChild(8).GetComponent<SkillHover>().enabled = knightPanelActive;
+        if (knightPanelActive)
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(8).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(8).GetComponent<Image>().color = new Color(0, 0, 0, .7f);
+        }
 
         //monk
         bool monkPanelActive = bool.Parse(GetVariableFromText(enemyText, "monk=", ';'));
         enemypedia[2].GetChild(4).gameObject.SetActive(!monkPanelActive);
+        skillsParent.GetChild(4).GetChild(5).GetChild(11).GetComponent<SkillHover>().enabled = monkPanelActive;
+        if (monkPanelActive)
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(11).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(11).GetComponent<Image>().color = new Color(0, 0, 0, .7f);
+        }
 
         //assassin
         bool assassinPanelActive = bool.Parse(GetVariableFromText(enemyText, "assassin=", ';'));
         enemypedia[3].GetChild(4).gameObject.SetActive(!assassinPanelActive);
+        skillsParent.GetChild(4).GetChild(5).GetChild(12).GetComponent<SkillHover>().enabled = assassinPanelActive;
+        if (assassinPanelActive)
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(12).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(12).GetComponent<Image>().color = new Color(0, 0, 0, .7f);
+        }
 
         //paladin
         bool paladinPanelActive = bool.Parse(GetVariableFromText(enemyText, "paladin=", ';'));
         enemypedia[4].GetChild(4).gameObject.SetActive(!paladinPanelActive);
+        skillsParent.GetChild(4).GetChild(5).GetChild(13).GetComponent<SkillHover>().enabled = paladinPanelActive;
+        if (paladinPanelActive)
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(13).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(13).GetComponent<Image>().color = new Color(0, 0, 0, .7f);
+        }
 
         //armorer
         bool armorerPanelActive = bool.Parse(GetVariableFromText(enemyText, "armorer=", ';'));
         enemypedia[5].GetChild(4).gameObject.SetActive(!armorerPanelActive);
+        skillsParent.GetChild(4).GetChild(5).GetChild(9).GetComponent<SkillHover>().enabled = armorerPanelActive;
+        if (armorerPanelActive)
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(9).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(9).GetComponent<Image>().color = new Color(0, 0, 0, .7f);
+        }
 
         //succubus
         bool succubusPanelActive = bool.Parse(GetVariableFromText(enemyText, "succubus=", ';'));
         enemypedia[6].GetChild(4).gameObject.SetActive(!succubusPanelActive);
+        skillsParent.GetChild(4).GetChild(5).GetChild(14).GetComponent<SkillHover>().enabled = succubusPanelActive;
+        if (succubusPanelActive)
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(14).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(14).GetComponent<Image>().color = new Color(0, 0, 0, .7f);
+        }
 
         //warlock
         bool warlockPanelActive = bool.Parse(GetVariableFromText(enemyText, "warlock=", ';'));
         enemypedia[7].GetChild(4).gameObject.SetActive(!warlockPanelActive);
+        skillsParent.GetChild(4).GetChild(5).GetChild(10).GetComponent<SkillHover>().enabled = warlockPanelActive;
+        if (warlockPanelActive)
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(10).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(5).GetChild(10).GetComponent<Image>().color = new Color(0, 0, 0, .7f);
+        }
 
         if (reader != null)
         {
@@ -548,9 +646,9 @@ public class MainMenu : MonoBehaviour
             writer.WriteLine("upgradeattackcost=" + 3 + ";");
 
             //skill values
-            writer.WriteLine("money1value=" + 0.01 + ";");
+            writer.WriteLine("money1value=" + 10 + ";");
             writer.WriteLine("money2value=" + 100 + ";");
-            writer.WriteLine("money3value=" + 10 + ";");
+            writer.WriteLine("money3value=" + .01f + ";");
             writer.WriteLine("money4value=" + 2 + ";");
             writer.WriteLine("base1value=" + 10 + ";");
             writer.WriteLine("base2value=" + 0 + ";");
@@ -560,7 +658,7 @@ public class MainMenu : MonoBehaviour
             writer.WriteLine("enemymonkvalue=" + 1 + ";");
             writer.WriteLine("enemyarmorervalue=" + 0 + ";");
             writer.WriteLine("enemywarlockvalue=" + .25f + ";");
-            writer.WriteLine("enemyassassinvalue=" + 0 + ";");
+            writer.WriteLine("enemyassassinvalue=" + 1 + ";");
             writer.WriteLine("enemypaladinvalue=" + 5 + ";");
             writer.WriteLine("enemysuccubusvalue=" + .3f + ";");
             writer.WriteLine("upgraderangevalue=" + 2 + ";");
@@ -577,7 +675,7 @@ public class MainMenu : MonoBehaviour
         {
             writer = new StreamWriter(skillPointFile, false);
 
-            writer.WriteLine("skillpoints=" + skillPoints + ";");
+            writer.WriteLine("skillpoints=0;");
 
             if (writer != null)
             {
@@ -623,23 +721,24 @@ public class MainMenu : MonoBehaviour
         //base 1
         skillTreeCosts.Add("base1cost", int.Parse(GetVariableFromText(skillTreeText, "base1cost=", ';')));
         skillTreeValues.Add("base1value", float.Parse(GetVariableFromText(skillTreeText, "base1value=", ';')));
-        
+
         //base 2
         skillTreeCosts.Add("base2cost", int.Parse(GetVariableFromText(skillTreeText, "base2cost=", ';')));
         skillTreeValues.Add("base2value", float.Parse(GetVariableFromText(skillTreeText, "base2value=", ';')));
-        
+
         //base 3
         skillTreeCosts.Add("base3cost", int.Parse(GetVariableFromText(skillTreeText, "base3cost=", ';')));
         skillTreeValues.Add("base3value", float.Parse(GetVariableFromText(skillTreeText, "base3value=", ';')));
-        
+        skillTreeMaskParent.GetChild(2);
+
         //enemy 1
         skillTreeCosts.Add("enemy1cost", int.Parse(GetVariableFromText(skillTreeText, "enemy1cost=", ';')));
         skillTreeValues.Add("enemy1value", float.Parse(GetVariableFromText(skillTreeText, "enemy1value=", ';')));
-        
+
         //enemy knight
         skillTreeCosts.Add("enemyknightcost", int.Parse(GetVariableFromText(skillTreeText, "enemyknightcost=", ';')));
         skillTreeValues.Add("enemyknightvalue", float.Parse(GetVariableFromText(skillTreeText, "enemyknightvalue=", ';')));
-        
+
         //enemy armorer
         skillTreeCosts.Add("enemyarmorercost", int.Parse(GetVariableFromText(skillTreeText, "enemyarmorercost=", ';')));
         skillTreeValues.Add("enemyarmorervalue", float.Parse(GetVariableFromText(skillTreeText, "enemyarmorervalue=", ';')));
@@ -722,193 +821,358 @@ public class MainMenu : MonoBehaviour
         //side effects of reading the code below are: dizziness, shortness of breath, vomiting, eye watering, hemorrhaging of the brain
 
         //money 1
-        skillsParent.GetChild(4).GetChild(4).GetChild(0).GetChild(0).GetComponent<Text>().text =
-            string.Format("increase the amount of er that is accumulated every second.\n\ncurrent:\n{0}% of max er\n\nnext level:\n{2}% of max er\n\ncost: {1}",
-            skillTreeValues["money1value"] * 100, skillTreeCosts["money1cost"], (skillTreeValues["money1value"] + skillTreeIncrement["money1"]) * 100);
-
-        //money 2
-        skillsParent.GetChild(4).GetChild(4).GetChild(1).GetChild(0).GetComponent<Text>().text =
-            string.Format("increase the amount of max er that you start at.\n\ncurrent:\n{0} increase\n\nnext level:\n{2} increase\n\ncost: {1}",
-            skillTreeValues["money2value"], skillTreeCosts["money2cost"], skillTreeValues["money2value"] + skillTreeIncrement["money2"]);
-
-        //money 3
-        if (skillTreeValues["money3value"] <= skillTreeMax["money3"])
+        if (skillTreeValues["money1value"] <= skillTreeMax["money1"])
         {
-            skillTreeValues["money3value"] = skillTreeMax["money3"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(2).GetChild(0).GetComponent<Text>().text =
+            skillTreeValues["money1value"] = skillTreeMax["money1"];
+            skillsParent.GetChild(4).GetChild(6).GetChild(0).GetChild(0).GetComponent<Text>().text =
                 string.Format("decrease the initial er cost of towers\n\ncurrent:\n{0} er\n\nMAX",
-                skillTreeValues["money3value"]);
+                skillTreeValues["money1value"]);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(2).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(0).GetChild(0).GetComponent<Text>().text =
                 string.Format("decrease the initial er cost of towers\n\ncurrent:\n{0} er\n\nnext level:\n{2} er\n\ncost: {1}",
-                skillTreeValues["money3value"], skillTreeCosts["money3cost"], skillTreeValues["money3value"] + skillTreeIncrement["money3"]);
+                skillTreeValues["money1value"], skillTreeCosts["money1cost"], skillTreeValues["money1value"] + skillTreeIncrement["money1"]);
         }
+        
+        //money 1 leaf
+        skillTreeMaskParent.GetChild(4).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["money1cost"] >= 10 ? 0 : (-1 * skillTreeCosts["money1cost"] + 1) / 10f + 1);
+        
+        //money 2
+        skillsParent.GetChild(4).GetChild(6).GetChild(1).GetChild(0).GetComponent<Text>().text =
+            string.Format("increase the amount of max er that you start at.\n\ncurrent:\n{0} increase\n\nnext level:\n{2} increase\n\ncost: {1}",
+            skillTreeValues["money2value"], skillTreeCosts["money2cost"], skillTreeValues["money2value"] + skillTreeIncrement["money2"]);
+
+        //money 2 leaf
+        skillTreeMaskParent.GetChild(5).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["money2cost"] >= 20 ? 0 : (-1 * skillTreeCosts["money2cost"] + 2) / 20f + 1);
+
+        //money 3
+        if (skillTreeValues["money3value"] >= skillTreeMax["money3"])
+        {
+            skillsParent.GetChild(4).GetChild(6).GetChild(2).GetChild(0).GetComponent<Text>().text =
+            string.Format("increase the amount of er that is accumulated every second.\n\ncurrent:\n{0}% of max er\n\nMAX",
+            Mathf.Round(skillTreeValues["money3value"] * 1000) / 10);
+        }
+        else
+        {
+            skillsParent.GetChild(4).GetChild(6).GetChild(2).GetChild(0).GetComponent<Text>().text =
+            string.Format("increase the amount of er that is accumulated every second.\n\ncurrent:\n{0}% of max er\n\nnext level:\n{2}% of max er\n\ncost: {1}",
+            Mathf.Round(skillTreeValues["money3value"] * 1000) / 10, skillTreeCosts["money3cost"], Mathf.Round((skillTreeValues["money3value"] + skillTreeIncrement["money3"]) * 1000) / 10);
+        }
+
+        //money 3 leaf
+        skillTreeMaskParent.GetChild(6).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["money3cost"] >= 30 ? 0 : (-1 * skillTreeCosts["money3cost"] + 3) / 30f + 1);
 
         //money 4
         if (skillTreeValues["money4value"] <= skillTreeMax["money4"])
         {
             skillTreeValues["money4value"] = skillTreeMax["money4"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(3).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(3).GetChild(0).GetComponent<Text>().text =
             string.Format("decrease amount the er cost of towers will increase by.\n\ncurrent:\n{0}%\n\nMAX",
-            (skillTreeValues["money4value"] - 1) * 100);
+            Mathf.Round((skillTreeValues["money4value"] - 1) * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(3).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(3).GetChild(0).GetComponent<Text>().text =
                 string.Format("decrease amount the er cost of towers will increase by.\n\ncurrent:\n{0}%\n\nnext level:\n{2}%\n\ncost: {1}",
-                (skillTreeValues["money4value"] - 1) * 100, skillTreeCosts["money4cost"], (skillTreeValues["money4value"] + skillTreeIncrement["money4"] - 1) * 100);
+                Mathf.Round((skillTreeValues["money4value"] - 1) * 1000) / 10, skillTreeCosts["money4cost"], Mathf.Round((skillTreeValues["money4value"] + skillTreeIncrement["money4"] - 1) * 1000) / 10);
+        }
+
+        //money 4 leaf
+        skillTreeMaskParent.GetChild(7).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["money4cost"] >= 30 ? 0 : (-1 * skillTreeCosts["money4cost"] + 3) / 30f + 1);
+
+        //money branch flower
+        int moneyFlower = skillTreeCosts["money1cost"] + skillTreeCosts["money2cost"] + skillTreeCosts["money3cost"] + skillTreeCosts["money4cost"];
+        if (moneyFlower < 9)
+        {
+            skillTreeMaskParent.GetChild(8).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, 1);
+        }
+        else
+        {
+            skillTreeMaskParent.GetChild(8).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, moneyFlower >= 90 ? 0 : (-1 * moneyFlower + 9) / 90f + 1);
         }
 
         //base 1
-        skillsParent.GetChild(4).GetChild(4).GetChild(4).GetChild(0).GetComponent<Text>().text =
+        skillsParent.GetChild(4).GetChild(6).GetChild(4).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the initial health of your base\n\ncurrent:\n{0}\n\nnext level:\n{2}\n\ncost: {1}",
             skillTreeValues["base1value"], skillTreeCosts["base1cost"], skillTreeValues["base1value"] + skillTreeIncrement["base1"]);
 
+        //base 1 leaf
+        skillTreeMaskParent.GetChild(0).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["base1cost"] >= 10 ? 0 : (-1 * skillTreeCosts["base1cost"] + 1) / 10f + 1);
+
         //base 2
-        skillsParent.GetChild(4).GetChild(4).GetChild(5).GetChild(0).GetComponent<Text>().text =
+        skillsParent.GetChild(4).GetChild(6).GetChild(5).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the amount your base will heal every 10 waves\n\ncurrent:\n{0}\n\nnext level:\n{2}\n\ncost: {1}",
             skillTreeValues["base2value"], skillTreeCosts["base2cost"], skillTreeValues["base2value"] + skillTreeIncrement["base2"]);
 
+        //base 2 leaf
+        skillTreeMaskParent.GetChild(1).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["base2cost"] >= 20 ? 0 : (-1 * skillTreeCosts["base2cost"] + 2) / 20f + 1);
+
         //base 3
-        skillsParent.GetChild(4).GetChild(4).GetChild(6).GetChild(0).GetComponent<Text>().text =
+        skillsParent.GetChild(4).GetChild(6).GetChild(6).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the amount of max health your base gains every 10 waves.\n\ncurrent:\n{0}\n\nnext level:\n{2}\n\ncost: {1}",
             skillTreeValues["base3value"], skillTreeCosts["base3cost"], skillTreeValues["base3value"] + skillTreeIncrement["base3"]);
 
+        //base 3 leaf
+        skillTreeMaskParent.GetChild(2).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["base3cost"] >= 30 ? 0 : (-1 * skillTreeCosts["base3cost"] + 3) / 30f + 1);
+
+        //base branch flower
+        int baseFlower = skillTreeCosts["base1cost"] + skillTreeCosts["base2cost"] + skillTreeCosts["base3cost"];
+        if (baseFlower < 6)
+        {
+            skillTreeMaskParent.GetChild(3).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, 1);
+        }
+        else
+        {
+            skillTreeMaskParent.GetChild(3).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, baseFlower >= 60 ? 0 : (-1 * baseFlower + 6) / 60f + 1);
+        }
+
         //enemy 1
-        skillsParent.GetChild(4).GetChild(4).GetChild(7).GetChild(0).GetComponent<Text>().text =
+        skillsParent.GetChild(4).GetChild(6).GetChild(7).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the amount of er gained from scourge.\n\ncurrent:\n{0} * wave number\n\nnext level:\n{2} * wave number\n\ncost: {1}",
             skillTreeValues["enemy1value"], skillTreeCosts["enemy1cost"], skillTreeValues["enemy1value"] + skillTreeIncrement["enemy1"]);
 
+        //enemy 1 leaf
+        skillTreeMaskParent.GetChild(9).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemy1cost"] >= 10 ? 0 : (-1 * skillTreeCosts["enemy1cost"] + 1) / 10f + 1);
+
         //enemy knight
-        skillsParent.GetChild(4).GetChild(4).GetChild(8).GetChild(0).GetComponent<Text>().text =
+        skillsParent.GetChild(4).GetChild(6).GetChild(8).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the number of knight waves, knights take more damage.\n\ncurrent:\n{3}% wave chance\n+{0}% damage\n\nnext level:\n10% wave chance\n+{2}% damage\n\ncost: {1}",
-            skillTreeValues["enemyknightvalue"] * 100, skillTreeCosts["enemyknightcost"], (skillTreeValues["enemyknightvalue"] + skillTreeIncrement["enemyknight"]) * 100, skillTreeCosts["enemyknightcost"] == 2 ? 5 : 10);
+            Mathf.Round(skillTreeValues["enemyknightvalue"] * 1000) / 10, skillTreeCosts["enemyknightcost"], Mathf.Round((skillTreeValues["enemyknightvalue"] + skillTreeIncrement["enemyknight"]) * 1000) / 10, skillTreeCosts["enemyknightcost"] == 2 ? 5 : 10);
+
+        //enemy knight leaf
+        skillTreeMaskParent.GetChild(10).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemyknightcost"] >= 20 ? 0 : (-1 * skillTreeCosts["enemyknightcost"] + 2) / 20f + 1);
 
         //enemy armorer
-        skillsParent.GetChild(4).GetChild(4).GetChild(9).GetChild(0).GetComponent<Text>().text =
+        skillsParent.GetChild(4).GetChild(6).GetChild(9).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the number of armorer waves, armorers take more damage when with half the range of the tower.\n\ncurrent:\n{3}% wave chance\n+{0}% damage\n\nnext level:\n10% wave chance\n+{2}% damage\n\ncost: {1}",
-            skillTreeValues["enemyarmorervalue"] * 100, skillTreeCosts["enemyarmorercost"], (skillTreeValues["enemyarmorervalue"] + skillTreeIncrement["enemyarmorer"]) * 100, skillTreeCosts["enemyarmorercost"] == 3 ? 5 : 10);
+            Mathf.Round(skillTreeValues["enemyarmorervalue"] * 1000) / 10, skillTreeCosts["enemyarmorercost"], Mathf.Round((skillTreeValues["enemyarmorervalue"] + skillTreeIncrement["enemyarmorer"]) * 100) / 10, skillTreeCosts["enemyarmorercost"] == 3 ? 5 : 10);
+
+        //enemy armorer leaf
+        skillTreeMaskParent.GetChild(11).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemyarmorercost"] >= 30 ? 0 : (-1 * skillTreeCosts["enemyarmorercost"] + 3) / 30f + 1);
 
         //enemy warlock
         if (skillTreeValues["enemywarlockvalue"] <= skillTreeMax["enemywarlock"])
         {
             skillTreeValues["enemywarlockvalue"] = skillTreeMax["enemywarlock"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(10).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(10).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the number of warlock waves, the warlock's damage threshhold is lower.\n\ncurrent:\n10% wave chance\n{0}% of max health\n\nMAX",
-            skillTreeValues["enemywarlockvalue"] * 100);
+            Mathf.Round(skillTreeValues["enemywarlockvalue"] * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(10).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(10).GetChild(0).GetComponent<Text>().text =
             string.Format("increase the number of warlock waves, the warlock's damage threshhold is lower.\n\ncurrent:\n{3}% wave chance\n{0}% of max health\n\nnext level:\n10% wave chance\n{2}% of max health\n\ncost: {1}",
-            skillTreeValues["enemywarlockvalue"] * 100, skillTreeCosts["enemywarlockcost"], (skillTreeValues["enemywarlockvalue"] + skillTreeIncrement["enemywarlock"]) * 100, skillTreeCosts["enemywarlockcost"] == 3 ? 5 : 10);
+            Mathf.Round(skillTreeValues["enemywarlockvalue"] * 1000) / 10, skillTreeCosts["enemywarlockcost"], Mathf.Round((skillTreeValues["enemywarlockvalue"] + skillTreeIncrement["enemywarlock"]) * 1000) / 10, skillTreeCosts["enemywarlockcost"] == 3 ? 5 : 10);
+        }
+
+        //enemy warlock leaf
+        skillTreeMaskParent.GetChild(12).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemywarlockcost"] >= 30 ? 0 : (-1 * skillTreeCosts["enemywarlockcost"] + 3) / 30f + 1);
+        
+        //enemy left branch flower
+        int enemyLeftFlower = skillTreeCosts["enemyknightcost"] + skillTreeCosts["enemyarmorercost"] + skillTreeCosts["enemywarlockcost"];
+        if (enemyLeftFlower < 8)
+        {
+            skillTreeMaskParent.GetChild(13).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, 1);
+        }
+        else
+        {
+            skillTreeMaskParent.GetChild(13).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, enemyLeftFlower >= 80 ? 0 : (-1 * enemyLeftFlower + 8) / 80f + 1);
         }
 
         //enemy monk
         if (skillTreeValues["enemymonkvalue"] <= skillTreeMax["enemymonk"])
         {
             skillTreeValues["enemymonkvalue"] = skillTreeMax["enemymonk"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(11).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(11).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of monk waves, monk have less speed.\n\ncurrent:\n10% wave chance\n{0}% speed\n\nMAX",
-                skillTreeValues["enemymonkvalue"] * 100);
+                Mathf.Round(skillTreeValues["enemymonkvalue"] * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(11).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(11).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of monk waves, monk have less speed.\n\ncurrent:\n{3}% wave chance\n{0}% speed\n\nnext level:\n10% wave chance\n{2}% speed\n\ncost: {1}",
-                skillTreeValues["enemymonkvalue"] * 100, skillTreeCosts["enemymonkcost"], (skillTreeValues["enemymonkvalue"] + skillTreeIncrement["enemymonk"]) * 100, skillTreeCosts["enemymonkcost"] == 2 ? 5 : 10);
+                Mathf.Round(skillTreeValues["enemymonkvalue"] * 1000) / 10, skillTreeCosts["enemymonkcost"], Mathf.Round((skillTreeValues["enemymonkvalue"] + skillTreeIncrement["enemymonk"]) * 1000) / 10, skillTreeCosts["enemymonkcost"] == 2 ? 5 : 10);
         }
+
+        //enemy monk leaf
+        skillTreeMaskParent.GetChild(14).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemymonkcost"] >= 20 ? 0 : (-1 * skillTreeCosts["enemymonkcost"] + 2) / 20f + 1);
 
         //enemy assassin
         if (skillTreeValues["enemyassassinvalue"] <= skillTreeMax["enemyassassin"])
         {
             skillTreeValues["enemyassassinvalue"] = skillTreeMax["enemyassassin"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(12).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(12).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of assassin waves, the assassin's attack based on missing health is lower.\n\ncurrent:\n10% wave chance\n-{0}% attack\n\nMAX",
-                skillTreeValues["enemyassassinvalue"] * 100);
+                Mathf.Round(skillTreeValues["enemyassassinvalue"] * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(12).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(12).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of assassin waves, the assassin's attack based on missing health is lower.\n\ncurrent:\n{3}% wave chance\n{0}% attack\n\nnext level:\n10% wave chance\n{2}% attack\n\ncost: {1}",
-                skillTreeValues["enemyassassinvalue"] * 100, skillTreeCosts["enemyassassincost"], (skillTreeValues["enemyassassinvalue"] + skillTreeIncrement["enemyassassin"]) * 100, skillTreeCosts["enemyassassincost"] == 3 ? 5 : 10);
+                Mathf.Round(skillTreeValues["enemyassassinvalue"] * 1000) / 10, skillTreeCosts["enemyassassincost"], Mathf.Round((skillTreeValues["enemyassassinvalue"] + skillTreeIncrement["enemyassassin"]) * 1000) / 10, skillTreeCosts["enemyassassincost"] == 3 ? 5 : 10);
         }
+
+        //enemy assassin leaf
+        skillTreeMaskParent.GetChild(15).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemyassassincost"] >= 30 ? 0 : (-1 * skillTreeCosts["enemyassassincost"] + 3) / 30f + 1);
 
         //enemy paladin
         if (skillTreeValues["enemypaladinvalue"] <= skillTreeMax["enemypaladin"])
         {
             skillTreeValues["enemypaladinvalue"] = skillTreeMax["enemypaladin"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(13).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(13).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of paladin waves, the paladin's shield lasts less time.\n\ncurrent:\n10% wave chance\n{0} seconds\n\nMAX",
                 skillTreeValues["enemypaladinvalue"]);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(13).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(13).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of paladin waves, the paladin's shield lasts less time.\n\ncurrent:\n{3}% wave chance\n{0} seconds\n\nnext level:\n10 % wave chance\n{2} seconds\n\ncost: {1}",
                 skillTreeValues["enemypaladinvalue"], skillTreeCosts["enemypaladincost"], skillTreeValues["enemypaladinvalue"] + skillTreeIncrement["enemypaladin"], skillTreeCosts["enemypaladincost"] == 3 ? 5 : 10);
         }
+
+        //enemy paladin leaf
+        skillTreeMaskParent.GetChild(16).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemypaladincost"] >= 30 ? 0 : (-1 * skillTreeCosts["enemypaladincost"] + 3) / 30f + 1);
 
         //enemy succubus
         if (skillTreeValues["enemysuccubusvalue"] <= skillTreeMax["enemysuccubus"])
         {
             skillTreeValues["enemysuccubusvalue"] = skillTreeMax["enemysuccubus"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(14).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(14).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of succubus waves, succubuses heal less.\n\ncurrent:\n10% wave chance\n{0}% of max health\n\nMAX",
-                skillTreeValues["enemysuccubusvalue"] * 100);
+                Mathf.Round(skillTreeValues["enemysuccubusvalue"] * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(14).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(14).GetChild(0).GetComponent<Text>().text =
                 string.Format("increase the number of succubus waves, succubuses heal less.\n\ncurrent:\n{3}% wave chance\n{0}% of max health\n\nnext level:\n10 % wave chance\n{2}% of max health\n\ncost: {1}",
-                skillTreeValues["enemysuccubusvalue"] * 100, skillTreeCosts["enemysuccubuscost"], (skillTreeValues["enemysuccubusvalue"] + skillTreeIncrement["enemysuccubus"]) * 100, skillTreeCosts["enemysuccubuscost"] == 3 ? 5 : 10);
+                Mathf.Round(skillTreeValues["enemysuccubusvalue"] * 1000) / 10, skillTreeCosts["enemysuccubuscost"], Mathf.Round((skillTreeValues["enemysuccubusvalue"] + skillTreeIncrement["enemysuccubus"]) * 1000) / 10, skillTreeCosts["enemysuccubuscost"] == 3 ? 5 : 10);
+        }
+
+        //enemy succubus leaf
+        skillTreeMaskParent.GetChild(17).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["enemysuccubuscost"] >= 30 ? 0 : (-1 * skillTreeCosts["enemysuccubuscost"] + 3) / 30f + 1);
+        
+        //enemy right branch flower
+        int enemyRightFlower = skillTreeCosts["enemymonkcost"] + skillTreeCosts["enemyassassincost"] + skillTreeCosts["enemypaladincost"] + skillTreeCosts["enemysuccubuscost"];
+        if (enemyRightFlower < 11)
+        {
+            skillTreeMaskParent.GetChild(18).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, 1);
+        }
+        else
+        {
+            skillTreeMaskParent.GetChild(18).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, enemyRightFlower >= 110 ? 0 : (-1 * enemyRightFlower + 11) / 110f + 1);
         }
 
         //upgrade range
         if (skillTreeValues["upgraderangevalue"] <= skillTreeMax["upgraderange"])
         {
             skillTreeValues["upgraderangevalue"] = skillTreeMax["upgraderange"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(15).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(15).GetChild(0).GetComponent<Text>().text =
                 string.Format("decrease amount of er range upgrade cost will increase by.\n\ncurrent:\n{0}%\n\nMAX",
-                (skillTreeValues["upgraderangevalue"] - 1) * 100);
+                Mathf.Round((skillTreeValues["upgraderangevalue"] - 1) * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(15).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(15).GetChild(0).GetComponent<Text>().text =
                 string.Format("decrease amount of er range upgrade cost will increase by.\n\ncurrent:\n{0}%\n\nnext level:\n{2}%\n\ncost: {1}",
-                (skillTreeValues["upgraderangevalue"] - 1) * 100, skillTreeCosts["upgraderangecost"], (skillTreeValues["upgraderangevalue"] + skillTreeIncrement["upgraderange"] - 1) * 100);
+                Mathf.Round((skillTreeValues["upgraderangevalue"] - 1) * 1000) / 10, skillTreeCosts["upgraderangecost"], Mathf.Round((skillTreeValues["upgraderangevalue"] + skillTreeIncrement["upgraderange"] - 1) * 1000) / 10);
         }
+
+        //upgrade range leaf
+        skillTreeMaskParent.GetChild(20).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["upgraderangecost"] >= 30 ? 0 : (-1 * skillTreeCosts["upgraderangecost"] + 3) / 30f + 1);
 
         //upgrade attack speed
         if (skillTreeValues["upgradeattackspeedvalue"] <= skillTreeMax["upgradeattackspeed"])
         {
             skillTreeValues["upgradeattackspeedvalue"] = skillTreeMax["upgradeattackspeed"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(16).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(16).GetChild(0).GetComponent<Text>().text =
                 string.Format("decrease amount of er attack speed upgrade cost will increase by.\n\ncurrent:\n{0}%\n\nMAX",
-                (skillTreeValues["upgradeattackspeedvalue"] - 1) * 100);
+                Mathf.Round((skillTreeValues["upgradeattackspeedvalue"] - 1) * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(16).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(16).GetChild(0).GetComponent<Text>().text =
                 string.Format("decrease amount of er attack speed upgrade cost will increase by.\n\ncurrent:\n{0}%\n\nnext level:\n{2}%\n\ncost: {1}",
-                (skillTreeValues["upgradeattackspeedvalue"] - 1) * 100, skillTreeCosts["upgradeattackspeedcost"], (skillTreeValues["upgradeattackspeedvalue"] + skillTreeIncrement["upgradeattackspeed"] - 1) * 100);
+                Mathf.Round((skillTreeValues["upgradeattackspeedvalue"] - 1) * 1000) / 10, skillTreeCosts["upgradeattackspeedcost"], Mathf.Round((skillTreeValues["upgradeattackspeedvalue"] + skillTreeIncrement["upgradeattackspeed"] - 1) * 1000) / 10);
         }
+
+        //upgrade attackspeed leaf
+        skillTreeMaskParent.GetChild(21).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["upgradeattackspeedcost"] >= 30 ? 0 : (-1 * skillTreeCosts["upgradeattackspeedcost"] + 3) / 30f + 1);
 
         //upgrade attack
         if (skillTreeValues["upgradeattackvalue"] <= skillTreeMax["upgradeattack"])
         {
             skillTreeValues["upgradeattackvalue"] = skillTreeMax["upgradeattack"];
-            skillsParent.GetChild(4).GetChild(4).GetChild(17).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(17).GetChild(0).GetComponent<Text>().text =
             string.Format("decrease amount of er attack upgrade cost will increase by.\n\ncurrent:\n{0}%\n\nMAX",
-            (skillTreeValues["upgradeattackvalue"] - 1) * 100);
+            Mathf.Round((skillTreeValues["upgradeattackvalue"] - 1) * 1000) / 10);
         }
         else
         {
-            skillsParent.GetChild(4).GetChild(4).GetChild(17).GetChild(0).GetComponent<Text>().text =
+            skillsParent.GetChild(4).GetChild(6).GetChild(17).GetChild(0).GetComponent<Text>().text =
             string.Format("decrease amount of er attack upgrade cost will increase by.\n\ncurrent:\n{0}%\n\nnext level:\n{2}%\n\ncost: {1}",
-            (skillTreeValues["upgradeattackvalue"] - 1) * 100, skillTreeCosts["upgradeattackcost"], (skillTreeValues["upgradeattackvalue"] + skillTreeIncrement["upgradeattack"] - 1) * 100);
+            Mathf.Round((skillTreeValues["upgradeattackvalue"] - 1) * 1000) / 10, skillTreeCosts["upgradeattackcost"], Mathf.Round((skillTreeValues["upgradeattackvalue"] + skillTreeIncrement["upgradeattack"] - 1) * 1000) / 10);
         }
+
+        //upgrade attack leaf
+        skillTreeMaskParent.GetChild(22).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, skillTreeCosts["upgradeattackcost"] >= 30 ? 0 : (-1 * skillTreeCosts["upgradeattackcost"] + 3) / 30f + 1);
+
+        //upgrade stem leaf
+        int upgradeFlower = skillTreeCosts["upgraderangecost"] + skillTreeCosts["upgradeattackspeedcost"] + skillTreeCosts["upgradeattackcost"];
+        if (upgradeFlower <= 9)
+        {
+            skillTreeMaskParent.GetChild(19).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, 1);
+        }
+        else
+        {
+            skillTreeMaskParent.GetChild(19).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, upgradeFlower >= 30 ? 0 : (-1 * upgradeFlower + 3) / 30f + 1);
+        }
+
+        //upgrade flowers
+        if (upgradeFlower < 9)
+        {
+            skillTreeMaskParent.GetChild(23).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, 1);
+            skillTreeMaskParent.GetChild(24).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, 1);
+        }
+        else
+        {
+            skillTreeMaskParent.GetChild(23).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, upgradeFlower >= 90 ? 0 : (-1 * upgradeFlower + 9) / 90f + 1);
+            skillTreeMaskParent.GetChild(24).GetComponent<Image>().color = new Color(0.8980392f, 0.6117647f, 0.3568628f, upgradeFlower >= 90 ? 0 : (-1 * upgradeFlower + 9) / 90f + 1);
+        }
+    }
+
+    //open lore screen
+    public void OpenLore()
+    {
+        loreParent.SetActive(true);
+    }
+
+    //close lore screen
+    public void CloseLore()
+    {
+        loreParent.SetActive(false);
+    }
+
+    //change and save dont show again variable
+    private void ChangeDontShowAgain(Toggle toggle)
+    {
+        dontShowMapPref = toggle.isOn;
+        SaveOptionsToFile();
+    }
+
+    //start game with procedurally generated maps
+    public void StartGameProceduralGenMaps()
+    {
+        randomizeMap = true;
+        SaveOptionsToFile();
+        SceneManager.LoadScene("Endless_Level");
+    }
+
+    //start game with premade maps
+    public void StartGamePremadeMaps()
+    {
+        randomizeMap = false;
+        SaveOptionsToFile();
+        SceneManager.LoadScene("Endless_Level");
     }
 }

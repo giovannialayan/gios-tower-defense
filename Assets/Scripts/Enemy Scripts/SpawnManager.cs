@@ -18,6 +18,7 @@ public class SpawnManager : MonoBehaviour
     //private bool spawnContinuously;
     private float spawnSpeed;
     private float timeSinceSpawn;
+    private int numPerSpawn;
     //private float timeSinceStartSpawn;
     private int numToSpawn;
     private Queue<Wave> currentWave;
@@ -130,10 +131,21 @@ public class SpawnManager : MonoBehaviour
             thePath = transform.GetComponent<EnemyPathing>().SetUpPath();
         }
 
-        if (wave.waveNumber != 0 && wave.waveNumber % 10 == 0 && spawnSpeed > .04f)
+        spawnSpeed = 30f / wave.enemies;
+
+        if (spawnSpeed > 1)
         {
-            spawnSpeed -= Time.fixedDeltaTime;
+            spawnSpeed = 1;
         }
+
+        //spawnSpeed = -1 * wave.enemies + 1;
+
+        //numPerSpawn = Mathf.Abs(Mathf.FloorToInt(spawnSpeed)) + 1;
+
+        //if (spawnSpeed <= 0)
+        //{
+        //    spawnSpeed = .01f;
+        //}
         
         timeSinceSpawn = spawnSpeed;
         currentWave.Enqueue(wave);

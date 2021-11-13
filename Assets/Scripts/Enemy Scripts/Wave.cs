@@ -110,25 +110,25 @@ public class Wave
             switch ((int)element)
             {
                 case 0:
-                    colorTag1 = "<color=#333333ff>";
+                    colorTag1 = "<color=#999999ff>";
                     break;
                 case 1:
-                    colorTag1 = "<color=#aaaaaaff>";
+                    colorTag1 = "<color=#eeeeeeff>";
                     break;
                 case 2:
                     colorTag1 = "<color=#ff0000ff>";
                     break;
                 case 3:
-                    colorTag1 = "<color=#0000ffff>";
+                    colorTag1 = "<color=#00ddffff>";
                     break;
                 case 4:
-                    colorTag1 = "<color=#cc6619ff>";
+                    colorTag1 = "<color=#ddaa10ff>";
                     break;
                 case 5:
-                    colorTag1 = "<color=#cccc00ff>";
+                    colorTag1 = "<color=#dddd33ff>";
                     break;
                 case 6:
-                    colorTag1 = "<color=#b200ccff>";
+                    colorTag1 = "<color=#ff77ffff>";
                     break;
                 case 7:
                     colorTag1 = "<color=#00ff00ff>";
@@ -142,7 +142,7 @@ public class Wave
 
         elementString = elementString.Substring(0, elementString.Length - 2);
 
-        return string.Format("wave #{0}\n{1} enemies\n{2} attack\n{3} health\n{4} speed\n{5} money\n{6} class\nthe elements within are\n{7}", waveNumber, enemies, attack, health, speed, worth, enemyClass, elementString);
+        return string.Format("<color=#ffffffff>wave #{0}\n{1} enemies\n{2} attack\n{3} health\n{4} speed\n{5} er\n{6} class\nthe elements within are\n{7}</color>", waveNumber, enemies, attack, health, speed, worth, enemyClass, elementString);
     }
 }
 

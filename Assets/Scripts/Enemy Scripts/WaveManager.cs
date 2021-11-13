@@ -125,49 +125,55 @@ public class WaveManager : MonoBehaviour
             if (m <= enemyWaveChances[0])
             {
                 enemyClass = EnemyClass.Cur;
-                waveInfos.Add(new Wave(waveNumberMod * 5, waveNumberMod * 2f, waveNumberMod * 1.5f, 3.05f, waveNumberMod * 2f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                waveInfos.Add(new Wave(waveNumberMod * 2, waveNumberMod * 3f, waveNumberMod * 1.5f, 3.05f, waveNumberMod * 2f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
             //5% or 10% chance for knight
             else if (m <= enemyWaveChances[1])
             {
                 enemyClass = EnemyClass.Knight;
-                waveInfos.Add(new Wave(waveNumberMod * 1, waveNumberMod * 5f, waveNumberMod * 3f, 2.525f, waveNumberMod * 10f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                int numKnights = Mathf.FloorToInt(waveNumberMod / 5f);
+                waveInfos.Add(new Wave(numKnights < 1 ? 1 : numKnights, waveNumberMod * 6f, waveNumberMod * 3f, 2.525f, waveNumberMod * 20f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
             //5% or 10% chance for monk
             else if (m <= enemyWaveChances[2])
             {
                 enemyClass = EnemyClass.Monk;
-                waveInfos.Add(new Wave(waveNumberMod * 10, waveNumberMod * .5f, waveNumberMod * .5f, 3.575f, waveNumberMod * 1f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                waveInfos.Add(new Wave(waveNumberMod * 4, waveNumberMod * 1f, waveNumberMod * .5f, 3.575f, waveNumberMod * 1f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
             //5% or 10% chance for paladin
             else if (m <= enemyWaveChances[3])
             {
                 enemyClass = EnemyClass.Paladin;
-                waveInfos.Add(new Wave(waveNumberMod * 3, waveNumberMod * 3f, waveNumberMod * 1.5f, 3.05f, waveNumberMod * 3.5f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                int numPaladins = Mathf.FloorToInt(waveNumberMod / 1.5f);
+                waveInfos.Add(new Wave(numPaladins < 1 ? 1 : numPaladins, waveNumberMod * 4f, waveNumberMod * 1.5f, 3.05f, waveNumberMod * 6.5f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
             //5% or 10% chance for assassin
             else if (m <= enemyWaveChances[4])
             {
                 enemyClass = EnemyClass.Assassin;
-                waveInfos.Add(new Wave(waveNumberMod * 3, waveNumberMod * 4f, waveNumberMod * 2f, 3f, waveNumberMod * 3.5f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                int numAssassins = Mathf.FloorToInt(waveNumberMod / 1.5f);
+                waveInfos.Add(new Wave(numAssassins < 1 ? 1 : numAssassins, waveNumberMod * 4f, waveNumberMod * 2f, 3f, waveNumberMod * 6.5f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
             //5% or 10% chance for succubus
             else if (m <= enemyWaveChances[5])
             {
                 enemyClass = EnemyClass.Succubus;
-                waveInfos.Add(new Wave(waveNumberMod * 2, waveNumberMod * 3f, waveNumberMod * 4f, 3.32f, waveNumberMod * 5f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                int numSuccubi = Mathf.FloorToInt(waveNumberMod / 2f);
+                waveInfos.Add(new Wave(numSuccubi < 1 ? 1 : numSuccubi, waveNumberMod * 4f, waveNumberMod * 4f, 3.32f, waveNumberMod * 8f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
             //5% or 10% chance for armorer
             else if (m <= enemyWaveChances[6])
             {
                 enemyClass = EnemyClass.Armorer;
-                waveInfos.Add(new Wave(waveNumberMod * 4, waveNumberMod * 3f, waveNumberMod * 3f, 3.1f, waveNumberMod * 2.5f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                int numArmorers = Mathf.FloorToInt(waveNumberMod / 2f);
+                waveInfos.Add(new Wave(numArmorers < 1 ? 1 : numArmorers, waveNumberMod * 4f, waveNumberMod * 3f, 3.1f, waveNumberMod * 8f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
             //5% or 10% chance for warlock
             else //if(m <= enemyWaveChances[7])
             {
                 enemyClass = EnemyClass.Warlock;
-                waveInfos.Add(new Wave(waveNumberMod * 6, waveNumberMod * 2f, waveNumberMod * 1.5f, 3.2f, waveNumberMod * 1.7f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
+                int numWarlocks = Mathf.FloorToInt(waveNumberMod / 1.5f);
+                waveInfos.Add(new Wave(numWarlocks < 1 ? 1 : numWarlocks, waveNumberMod * 3f, waveNumberMod * 1.5f, 3.2f, waveNumberMod * 6.5f + enemyWorthSkill * waveNumberMod, t.ToArray(), enemyClass, totalNumWaves));
             }
 
             waves[waves.Count - 1].GetComponent<WaveHover>().SetWaveInfo(waveInfos[waves.Count - 1]);

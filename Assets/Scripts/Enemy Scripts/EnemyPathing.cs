@@ -22,42 +22,17 @@ public class EnemyPathing : MonoBehaviour
     //best path
     private List<Vector3Int> bestPath;
 
-    //bool for toggling showing the best path
-    private bool toggleShowPath;
-
     // Start is called before the first frame update
     void Start()
     {
         grid = FindObjectOfType<Grid>();
         tilemap = FindObjectOfType<Tilemap>();
-
-        toggleShowPath = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //get best path
-        //if (Input.GetKeyDown(KeyCode.Q))
-        //{
-        //    List<Vector3Int> newPath = FindBestPath(GetPathArray(), pathRoot, pathGoal);
-        //    bestPath = FullArrayToTilePos(newPath);
-        //}
-
-        //show path
-        //if (Input.GetKeyDown(KeyCode.W) && bestPath != null)
-        //{
-        //    ShowPath(bestPath, toggleShowPath);
-
-        //    if (toggleShowPath)
-        //    {
-        //        toggleShowPath = false;
-        //    }
-        //    else
-        //    {
-        //        toggleShowPath = true;
-        //    }
-        //}
+        
     }
 
     public List<Vector3Int> BestPath{ get{ return bestPath; } }

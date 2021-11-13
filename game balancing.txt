@@ -87,12 +87,12 @@ amplifier tower (default water)
 
 enemy classes
 
-all expressions in enemy classes are multiplied by (waveNum + floor(waveNum / 10))
+all expressions in enemy classes are multiplied by (waveNum + floor(waveNum / 10) * 5)
 speed does not change with wave num
-spawn interval decreases by 2 frames every 10 waves
+spawn interval will always be low enough to spawn all enemies in 30 seconds
 
 cur
-- quantity = 5
+- quantity = 2
 - health = 2
 - attack = 1.5
 - speed = 1.05
@@ -101,7 +101,7 @@ cur
 - flavor text: the most basic form of elemental scourge, it is completely unevolved and not specialized for any particular situation
 
 knight
-- quantity = 1
+- quantity = / 5
 - health = 5
 - attack = 3
 - speed = .52
@@ -110,7 +110,7 @@ knight
 - flavor text: the product of a selfish scourge gathering er causing it to grow in size and vitality. but the unfocused increase in er causes it to be weighed down considerably.
 
 monk
-- quantity = 10
+- quantity = 4
 - health = .5
 - attack = .5
 - speed = 1.58
@@ -119,7 +119,7 @@ monk
 - flavor text: scourge that have grown accustomed to moving in a swarm since alone they very weak. they attempt to use their sheer quantity and speed to overwhelm their prey.
 
 paladin
-- quantity = 3
+- quantity = / 1.5
 - health = 3
 - attack = 1.5
 - speed = 1.05
@@ -128,7 +128,7 @@ paladin
 - flavor text: scourge that has found a method to absorb er that damages it and transpose it into a defensive measure that blocks all incoming er.
 
 assassin
-- quantity = 3
+- quantity = / 1.5
 - health = 4
 - attack = 2
 - speed = 1
@@ -143,7 +143,7 @@ assassin
 - attack = baseattack + ((maxhealth * waveNum - x * (waveNum + 1)) / maxhealth)
 
 succubus
-- quantity = 2
+- quantity = / 2
 - health = 3
 - attack = 4
 - speed = 1.32
@@ -152,7 +152,7 @@ succubus
 - flavor text: a scourge that evolved a precise specialization to counteract er with the ability to hamper movement and instead is able to feed off of it.
 
 armorer
-- quantity = 4
+- quantity = / 2
 - health = 3
 - attack = 3
 - speed = 1.1
@@ -167,7 +167,7 @@ armorer
 - code: bullets contain a reference to the tower that spawned it, on impact check distance between enemy and tower
 
 warlock
-- quantity = 6
+- quantity = / 1.5
 - health = 2
 - attack = 1.5
 - speed = 1.2

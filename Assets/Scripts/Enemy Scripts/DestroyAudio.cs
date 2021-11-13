@@ -4,18 +4,18 @@ using UnityEngine;
 
 public class DestroyAudio : MonoBehaviour
 {
-    public AudioSource audio;
+    public AudioSource audioSource;
 
     // Start is called before the first frame update
     void Start()
     {
-        audio.Play();
+        audioSource.Play();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!audio.isPlaying)
+        if (!audioSource.isPlaying)
         {
             Destroy(gameObject);
         }

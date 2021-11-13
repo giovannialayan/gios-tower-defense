@@ -240,29 +240,6 @@ public class MapGenerator : MonoBehaviour
         return new Vector3Int(x - tilemap.cellBounds.size.x / 2, y - tilemap.cellBounds.size.y / 2, 0);
     }
 
-    //update loading bar
-    /*
-    //private void UpdateLoadingBar(float current, float max)
-    //{
-    //    if (current > max)
-    //    {
-    //        current = max;
-    //    }
-
-    //    //change bar
-    //    loadingBarImage.rectTransform.sizeDelta = new Vector2(current / max * barFullWidth, barHeight);
-
-    //    //change text
-    //    loadingBarText.text = ((int)(current / max * 100)).ToString();
-    //}
-
-    //toggle whether loading bar should be visible
-    //private void ToggleLoadingBar(bool state)
-    //{
-    //    loadingBarParent.SetActive(state);
-    //}
-    */
-
     //maze generation algorithm using binary tree
     public void BinaryTreeMazeGen()
     {
@@ -515,5 +492,1131 @@ public class MapGenerator : MonoBehaviour
 
         GameObject newBase = Instantiate(baseObj, basePos, Quaternion.identity);
         gameManager.BaseManager = newBase.GetComponent<BaseManager>();
+    }
+
+    //overload that takes the positions directly
+    private void CreateMapStructures(Vector3 spawnerCell, Vector3 baseCell)
+    {
+        GameObject newSpawner = Instantiate(spawnerObj, spawnerCell, Quaternion.identity);
+        waveManager.SpawnMan = newSpawner.GetComponent<SpawnManager>();
+
+        GameObject newBase = Instantiate(baseObj, baseCell, Quaternion.identity);
+        gameManager.BaseManager = newBase.GetComponent<BaseManager>();
+    }
+
+    //generate preset map pattern
+    public void GeneratePresetMap(int preset)
+    {
+        ResetMap(tilemap, wallTile);
+
+        switch (preset)
+        {
+            //wiggily map
+            case 0:
+                //long segments
+                for (int i = 5; i >= -5; i--)
+                {
+                    //first column
+                    tilemap.SetTile(new Vector3Int(-18, i, 0), pathTile);
+
+                    //third column
+                    tilemap.SetTile(new Vector3Int(-15, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-14, i, 0), pathTile);
+
+                    //fifth column
+                    tilemap.SetTile(new Vector3Int(-11, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-10, i, 0), pathTile);
+
+                    //seventh column
+                    tilemap.SetTile(new Vector3Int(-7, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-6, i, 0), pathTile);
+
+                    //ninth column
+                    tilemap.SetTile(new Vector3Int(-3, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-2, i, 0), pathTile);
+
+                    //eleventh column
+                    tilemap.SetTile(new Vector3Int(2, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(3, i, 0), pathTile);
+
+                    //thirteenth column
+                    tilemap.SetTile(new Vector3Int(6, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(7, i, 0), pathTile);
+
+                    //fifteenth column
+                    tilemap.SetTile(new Vector3Int(10, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(11, i, 0), pathTile);
+
+                    //seventeenth column
+                    tilemap.SetTile(new Vector3Int(14, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(15, i, 0), pathTile);
+
+                    //ninteenth column
+                    tilemap.SetTile(new Vector3Int(18, i, 0), pathTile);
+                }
+
+                //bottom segments
+                for (int i = -4; i >= -5; i--)
+                {
+                    //second column
+                    tilemap.SetTile(new Vector3Int(-17, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-16, i, 0), pathTile);
+
+                    //sixth column
+                    tilemap.SetTile(new Vector3Int(-9, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-8, i, 0), pathTile);
+
+                    //tenth column
+                    tilemap.SetTile(new Vector3Int(-1, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(0, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(1, i, 0), pathTile);
+
+                    //fourteenth column
+                    tilemap.SetTile(new Vector3Int(8, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(9, i, 0), pathTile);
+
+                    //eighteenth column
+                    tilemap.SetTile(new Vector3Int(16, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(17, i, 0), pathTile);
+                }
+
+                //top segments
+                for (int i = 5; i >= 4; i--)
+                {
+                    //fourth column
+                    tilemap.SetTile(new Vector3Int(-13, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-12, i, 0), pathTile);
+
+                    //eighth column
+                    tilemap.SetTile(new Vector3Int(-5, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(-4, i, 0), pathTile);
+
+                    //twelfth column
+                    tilemap.SetTile(new Vector3Int(4, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(5, i, 0), pathTile);
+
+                    //sixteenth column
+                    tilemap.SetTile(new Vector3Int(12, i, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(13, i, 0), pathTile);
+                }
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(-18, 5, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(18, 5, 0), baseTile);
+
+                CreateMapStructures(new Vector3(-18, 5, 0), new Vector3(18, 5, 0));
+                break;
+
+            //zigzag map
+            case 1:
+                //long segments
+                for (int i = 6; i >= 2; i--)
+                {
+                    //1 column
+                    tilemap.SetTile(new Vector3Int(-17, i, 0), pathTile);
+
+                    //2 column
+                    tilemap.SetTile(new Vector3Int(-16, i - 4, 0), pathTile);
+
+                    //3 column
+                    tilemap.SetTile(new Vector3Int(-15, i * -1, 0), pathTile);
+
+                    //5 column
+                    tilemap.SetTile(new Vector3Int(-13, i * -1, 0), pathTile);
+
+                    //6 column
+                    tilemap.SetTile(new Vector3Int(-12, i - 4, 0), pathTile);
+
+                    //7 column
+                    tilemap.SetTile(new Vector3Int(-11, i, 0), pathTile);
+
+                    //9 column
+                    tilemap.SetTile(new Vector3Int(-9, i, 0), pathTile);
+
+                    //10 column
+                    tilemap.SetTile(new Vector3Int(-8, i - 4, 0), pathTile);
+
+                    //11 column
+                    tilemap.SetTile(new Vector3Int(-7, i * -1, 0), pathTile);
+
+                    //13 column
+                    tilemap.SetTile(new Vector3Int(-5, i * -1, 0), pathTile);
+
+                    //14 column
+                    tilemap.SetTile(new Vector3Int(-4, i - 4, 0), pathTile);
+
+                    //15 column
+                    tilemap.SetTile(new Vector3Int(-3, i, 0), pathTile);
+
+                    //17 column
+                    tilemap.SetTile(new Vector3Int(-1, i, 0), pathTile);
+
+                    //18 column
+                    tilemap.SetTile(new Vector3Int(0, i - 4, 0), pathTile);
+
+                    //19 column
+                    tilemap.SetTile(new Vector3Int(1, i * -1, 0), pathTile);
+
+                    //21 column
+                    tilemap.SetTile(new Vector3Int(3, i * -1, 0), pathTile);
+
+                    //22 column
+                    tilemap.SetTile(new Vector3Int(4, i - 4, 0), pathTile);
+
+                    //23 column
+                    tilemap.SetTile(new Vector3Int(5, i, 0), pathTile);
+
+                    //25 column
+                    tilemap.SetTile(new Vector3Int(7, i, 0), pathTile);
+
+                    //26 column
+                    tilemap.SetTile(new Vector3Int(8, i - 4, 0), pathTile);
+
+                    //27 column
+                    tilemap.SetTile(new Vector3Int(9, i * -1, 0), pathTile);
+
+                    //29 column
+                    tilemap.SetTile(new Vector3Int(11, i * -1, 0), pathTile);
+
+                    //30 column
+                    tilemap.SetTile(new Vector3Int(12, i - 4, 0), pathTile);
+
+                    //31 column
+                    tilemap.SetTile(new Vector3Int(13, i, 0), pathTile);
+
+                    //33 column
+                    tilemap.SetTile(new Vector3Int(15, i, 0), pathTile);
+
+                    //34 column
+                    tilemap.SetTile(new Vector3Int(16, i - 4, 0), pathTile);
+
+                    //35 column
+                    tilemap.SetTile(new Vector3Int(17, i * -1, 0), pathTile);
+                }
+
+                //small segments
+                for (int i = 6; i >= 5; i--)
+                {
+                    //0 column
+                    tilemap.SetTile(new Vector3Int(-18, i, 0), pathTile);
+
+                    //4 column
+                    tilemap.SetTile(new Vector3Int(-14, i * -1, 0), pathTile);
+
+                    //8 column
+                    tilemap.SetTile(new Vector3Int(-10, i, 0), pathTile);
+
+                    //12 column
+                    tilemap.SetTile(new Vector3Int(-6, i * -1, 0), pathTile);
+
+                    //18 column
+                    tilemap.SetTile(new Vector3Int(-2, i, 0), pathTile);
+
+                    //22 column
+                    tilemap.SetTile(new Vector3Int(2, i * -1, 0), pathTile);
+
+                    //26 column
+                    tilemap.SetTile(new Vector3Int(6, i, 0), pathTile);
+
+                    //30 column
+                    tilemap.SetTile(new Vector3Int(10, i * -1, 0), pathTile);
+
+                    //32 column
+                    tilemap.SetTile(new Vector3Int(14, i, 0), pathTile);
+
+                    //36 column
+                    tilemap.SetTile(new Vector3Int(18, i * -1, 0), pathTile);
+                }
+                
+                //spawner
+                tilemap.SetTile(new Vector3Int(-18, 6, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(18, -6, 0), baseTile);
+
+                CreateMapStructures(new Vector3Int(-18, 6, 0), new Vector3Int(18, -6, 0));
+                break;
+
+            //swirly map
+            case 2:
+                for (int i = -18; i <= 18; i++)
+                {
+                    //top row
+                    tilemap.SetTile(new Vector3Int(i, 6, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(i, 5, 0), pathTile);
+                    //tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+
+                    //bot row
+                    //tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(i, -5, 0), pathTile);
+                    tilemap.SetTile(new Vector3Int(i, -6, 0), pathTile);
+
+                    //middle rows
+                    if (i != 15 && i != 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+
+                        if (i != -16)
+                        {
+                            tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+
+                            if (i != 13)
+                            {
+                                tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                            }
+                        }
+                    }
+
+                    //right column
+                    if (i > 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, -3, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, 3, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //middle column
+                    if (i == 14)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                    }
+
+                    if (i == -15)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                    }
+
+                    //left column
+                    if (i < -16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, -3, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                    }
+                }
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(-18, 6, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(12, 0, 0), baseTile);
+
+                CreateMapStructures(new Vector3(-18, 6, 0), new Vector3(12, 0, 0));
+                break;
+
+            //horseshoe map
+            case 3:
+                //rows
+                for (int i = -18; i <= 18; i++)
+                {
+                    //row 1
+                    if (i != -9)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 6, 0), pathTile);
+                    }
+
+                    //row 2
+                    if (i != -7 && i != 17)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //row 3
+                    if (i != -17 && i != -13 && i != -11 && i != -9 && i != 7 && i != 9 && i != 11)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+                    }
+
+                    //row 4
+                    if (i != -11 && i != 5 && i != 7 && i != 9 && i != 11 && i != 13 && i != 15 && i != 17)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                    }
+
+                    //row 5
+                    if (i != 7 && i != 15 && i != 17)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+                    }
+
+                    //row 6
+                    if (i != -13 && i != -11 && i != -4 && i != -2 && i != 5 && i != 7 && i != 9 && i != 11 && i != 17)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    }
+
+                    //row 7
+                    if (i != 11)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -6, 0), pathTile);
+                    }
+                }
+
+                //columns
+                for (int i = 6; i > -6; i--)
+                {
+                    //column 1
+                    if (i != -1 && i != -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(-18, i, 0), pathTile);
+                    }
+
+                    //column 2
+                    if (i != 5)
+                    {
+                        tilemap.SetTile(new Vector3Int(-12, i, 0), pathTile);
+                    }
+
+                    //column 3
+                    if (i != -3 && i != -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(-8, i, 0), pathTile);
+                    }
+
+                    //column 4
+                    if (i == -3 || i == -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(-3, i, 0), pathTile);
+                    }
+
+                    //column 5
+                    if (i != 5)
+                    {
+                        tilemap.SetTile(new Vector3Int(6, i, 0), pathTile);
+                    }
+
+                    //column 6
+                    if (i != 5 && i != 3 && i != -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(8, i, 0), pathTile);
+                    }
+
+                    //column 7
+                    if (i != 5)
+                    {
+                        tilemap.SetTile(new Vector3Int(10, i, 0), pathTile);
+                    }
+
+                    //column 8
+                    if (i != -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(14, i, 0), pathTile);
+                    }
+
+                    //column 9
+                    if (i != 5 && i != 3 && i != 1 && i != -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(16, i, 0), pathTile);
+                    }
+
+                    //column 10
+                    tilemap.SetTile(new Vector3Int(18, i, 0), pathTile);
+                }
+
+                //outliers
+                tilemap.SetTile(new Vector3Int(-14, 1, 0), pathTile);
+                tilemap.SetTile(new Vector3Int(-10, 1, 0), pathTile);
+                tilemap.SetTile(new Vector3Int(-5, -5, 0), pathTile);
+                tilemap.SetTile(new Vector3Int(4, -3, 0), pathTile);
+                tilemap.SetTile(new Vector3Int(12, 1, 0), pathTile);
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(-14, -4, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(12, -6, 0), baseTile);
+
+                CreateMapStructures(new Vector3(-14, -4, 0), new Vector3(12, -6, 0));
+                break;
+
+            case 4:
+                //rows
+                for (int i = -18; i <= 18; i++)
+                {
+                    //row 1
+                    if ((i < -6 || i > -4) && i != 6)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 6, 0), pathTile);
+                    }
+
+                    //row 1.5
+                    if (i == -3 || i == 5 || i == 7 || i == 9 || i == 13)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 5, 0), pathTile);
+                    }
+
+                    //row 2
+                    if (i > -4 && i != 4 && i != 8 && i != 12 && i < 14)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //row 3
+                    if (i < -13 || i > 13 || i == 2)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+                    }
+
+                    //row 3
+                    if (i != -10 && i != -6 && i != 0 && i != 2 && i != 8 && (i < 11 || i > 14))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                    }
+
+                    //row 4
+                    if (i != -10 && (i < -8 || i > -6) && (i < -4 || i > -2) && i != 0 && i != 2 && i != 4 && i != 10 && i < 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+                    }
+
+                    //row 5
+                    if ((i < -5 || i > -2) && (i < 8 || i > 10) && i < 14 && i != 12 && i != 4 && i != 2)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    }
+
+                    //row 6
+                    if ((i < 4 || i > 6) && i != 12)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -6, 0), pathTile);
+                    }
+                }
+
+                //columns
+                for (int i = 6; i > -6; i--)
+                {
+                    //column 1 & 2 & 3
+                    if (i > -1)
+                    {
+                        tilemap.SetTile(new Vector3Int(-13, i, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(-7, i, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(7, i, 0), pathTile);
+                    }
+
+                    //column 4 & 5 & 6
+                    if (i < 1 && i > -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(-9, i, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(-5, i, 0), pathTile);
+                        tilemap.SetTile(new Vector3Int(-1, i, 0), pathTile);
+                    }
+
+                    //column 7
+                    if (i == -1 || i == -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(-11, i, 0), pathTile);
+                    }
+
+                    //column 8
+                    if (i != 5 && i != 3 && i != -5)
+                    {
+                        tilemap.SetTile(new Vector3Int(1, i, 0), pathTile);
+                    }
+
+                    //column 9
+                    if (i != 5)
+                    {
+                        tilemap.SetTile(new Vector3Int(3, i, 0), pathTile);
+                    }
+
+                    //column 10
+                    if (i != 5 && i != -1)
+                    {
+                        tilemap.SetTile(new Vector3Int(11, i, 0), pathTile);
+                    }
+
+                    //column 10
+                    if (i > 1 || i < -1)
+                    {
+                        tilemap.SetTile(new Vector3Int(13, i, 0), pathTile);
+                    }
+                }
+
+                //outliers
+                tilemap.SetTile(new Vector3Int(5, -3, 0), pathTile);
+                tilemap.SetTile(new Vector3Int(7, -5, 0), pathTile);
+                tilemap.SetTile(new Vector3Int(9, -1, 0), pathTile);
+                tilemap.SetTile(new Vector3Int(15, -1, 0), pathTile);
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(-18, 0, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(18, 0, 0), baseTile);
+
+                CreateMapStructures(new Vector3(-18, 0, 0), new Vector3(18, 0, 0));
+                break;
+
+            //fractal map
+            case 5:
+                for (int i = -18; i <= 18; i++)
+                {
+                    //row 1
+                    if (i < -14 || i > 12)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 6, 0), pathTile);
+                    }
+
+                    //row 2
+                    if (i != -17 && (i < -13 || i > 0) && (i < 3 || i > 12))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 5, 0), pathTile);
+                    }
+
+                    //row 3
+                    if ((i < -17 || i > -16) && (i < -12 || i > -1) && (i < 4 || i > 13))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //row 4
+                    if ((i < -17 || i > -15) && (i < -11 || i > -2) && (i < 1 || i > 2) && (i < 5 || i > 14 || i == 10))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 3, 0), pathTile);
+                    }
+
+                    //row 5
+                    if ((i < -17 || i > -14) && (i < -10 || i > -2) && (i < 1 || i > 3) && (i < 6 || i > 8) && (i < 12 || i > 15))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+                    }
+
+                    //row 6
+                    if ((i < -17 || i > -14) && (i < -10 || i > -1) && (i < 2 || i > 4) && i != 7 && (i < 13 || i > 16))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                    }
+
+                    //row 7
+                    if ((i < -17 || i > -14) && (i < -10 || i > 0) && (i < 3 || i > 5) && (i < 14 || i > 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                    }
+
+                    //row 8
+                    if ((i < -17 || i > -14) && (i < -10 || i > 1) && (i < 4 || i > 6) && i != 10 && (i < 15 || i > 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                    }
+
+                    //row 9
+                    if ((i < -16 || i > -14) && (i < -10 || i > 1) && (i < 5 || i > 7) && (i < 9 || i > 11) && (i < 15 || i > 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+                    }
+
+                    //row 10
+                    if ((i < -15 || i > -13) && (i < -9 || i > 0) && (i < 6 || i > 12) && (i < 16 || i > 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -3, 0), pathTile);
+                    }
+
+                    //row 11
+                    if ((i < -14 || i > -12) && (i < -8 || i > -1) && (i < 7 || i > 13) && i != 17)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    }
+
+                    //row 12
+                    if ((i < -13 || i > -11) && (i < 6 || i > 14))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -5, 0), pathTile);
+                    }
+
+                    //row 13
+                    if ((i < -12 || i > -10) && (i < 5 || i > 15))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -6, 0), pathTile);
+                    }
+                }
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(12, 6, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(-13, -6, 0), baseTile);
+
+                CreateMapStructures(new Vector3(12, 6, 0), new Vector3(-13, -6, 0));
+                break;
+
+            //asteroid field
+            case 6:
+                for (int i = -18; i <= 18; i++)
+                {
+                    //row 1
+                    if (i > -15 && (i < -2 || i > 1) && i != 8 && i != 9 && i != 16 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 5, 0), pathTile);
+                    }
+
+                    //row 2
+                    if (i > -15 && (i < -13 || i > -11) && (i < -9 || i > -5) && (i < -2 || i > 1) && i != 4 && i != 5 && i != 8 && i != 9 && i != 12 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //row 3
+                    if (i > -15 && (i < -13 || i > -11) && (i < -9 || i > -5) && (i < -2 || i > 1) && i != 4 && i != 5 && i != 14 && i != 15 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 3, 0), pathTile);
+                    }
+
+                    //row 4
+                    if (i > -15 && (i < -13 || i > -11) && (i < -9 || i > -5) && i != 8 && i != 14 && i != 15 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+                    }
+
+                    //row 5
+                    if (i > -15 && (i < -13 || i > -11) && (i < -9 || i > -5) && (i < -3 || i > 3) && i != 5 && i != 10 && i != 11 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                    }
+
+                    //row 6
+                    if (i > -18 && (i < -13 || i > -11) && (i < -3 || i > 3) && i != 10 && i != 11 && i != 14 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                    }
+
+                    //row 7
+                    if (i > -15 && (i < -13 || i > -11) && (i < -9 || i > -6) && (i < -3 || i > 3) && i != 5 && i != 6 && i != 8 && i != 16 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                    }
+
+                    //row 8
+                    if (i > -15 && (i < -9 || i > -6) && i != 5 && i != 6 && i != 10 && i != 13 && i != 14 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+                    }
+
+                    //row 9
+                    if (i > -11 && (i < -9 || i > -6) && (i < -3 || i > 0) && i != 13 && i != 14 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -3, 0), pathTile);
+                    }
+
+                    //row 10
+                    if (i > -11 && (i < -9 || i > -6) && (i < -3 || i > 0) && i != 7 && i != 8 && i != 11 && i != 16 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    }
+
+                    //row 11
+                    if (i > -11 && (i < -3 || i > 0) && i != 7 && i != 8 && i != 13 && i != 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -5, 0), pathTile);
+                    }
+                }
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(-18, 0, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(18, 0, 0), baseTile);
+
+                CreateMapStructures(new Vector3(-18, 0, 0), new Vector3(18, 0, 0));
+                break;
+
+            //back to back map
+            case 7:
+                for (int i = -18; i <= 18; i++)
+                {
+                    //row 1
+                    if (i != -10 && i != -5 && i != 0)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 6, 0), pathTile);
+                    }
+
+                    //row 2
+                    if (i == -18 || i == -11 || i == -9 || i == -6 || i == -4 || i == 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 5, 0), pathTile);
+                    }
+
+                    //row 3
+                    if (i == -18 || i == -11 || i == -9 || (i >= -6 && i <= -4) || (i >= -1 && i <= 2) || i >= 7)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //row 4
+                    if (i == -18 || i == -11 || i == -9 || i == -1 || i == 2 || i == 7)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 3, 0), pathTile);
+                    }
+
+                    //row 5
+                    if (i == -18 || i == -11 || i == -9 || i == -1 || (i >= 2 && i <= 5) || i == 7 || (i >= 10 && i <= 14))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+                    }
+
+                    //row 6
+                    if (i == -18 || (i >= -11 && i <= -9) || i == -1 || i == 5 || i == 7 || i == 10 || i == 14)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                    }
+
+                    //row 7
+                    if ((i < -13 || i > -7) && (i < 0 || i > 4) && i != 6 && i != 8 && i != 9 && (i < 11 || i > 13) && i < 15)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                    }
+
+                    //row 8
+                    if (i == -14 || i == -6 || (i >= 3 && i <= 5) || (i >= 7 && i <= 10) || (i >= 14 && i <= 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                    }
+
+                    //row 9
+                    if (i == -14 || i == -6 || i == 3 || i == 17)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+                    }
+
+                    //row 10
+                    if (i < -13 || (i >= -12 && i <= -8) || (i >= -6 && i <= 0) || i == 3 || i == 17)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -3, 0), pathTile);
+                    }
+
+                    //row 11
+                    if (i == -18 || i == -12 || i == -8 || i == 0 || i == 3 || (i >= 7 && i <= 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    }
+
+                    //row 12
+                    if (i == -18 || i == -12 || i == -8 || i == 0 || i == 3 || i == 7)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -5, 0), pathTile);
+                    }
+
+                    //row 13
+                    if (i < -11 || (i >= -8 && i <= 0) || (i >= 3 && i <= 7))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -6, 0), pathTile);
+                    }
+                }
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(-1, 6, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(1, 6, 0), baseTile);
+
+                CreateMapStructures(new Vector3(-1, 6, 0), new Vector3(1, 6, 0));
+                break;
+
+            //snake map
+            case 8:
+                for (int i = -18; i <= 18; i++)
+                {
+                    //row 1
+                    if (i == -18 || i == -17 || (i >= 13 && i <= 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 6, 0), pathTile);
+                    }
+
+                    //row 2
+                    if ((i >= -18 && i <= -16) || (i >= -7 && i <= -1) || (i >= 12 && i <= 18))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 5, 0), pathTile);
+                    }
+
+                    //row 3
+                    if ((i >= -17 && i <= -15) || (i >= -8 && i <= 0) || (i >= 8 && i <= 13) || i == 17 || i == 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //row 4
+                    if ((i >= -16 && i <= -14) || (i >= -9 && i <= -7) || (i >= -1 && i <= 1) || (i >= 7 && i <= 12) || i == 17 || i == 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 3, 0), pathTile);
+                    }
+
+                    //row 5
+                    if (i == -15 || i == -14 || (i >= -10 && i <= -8) || (i >= 0 && i <= 8) || i >= 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+                    }
+
+                    //row 6
+                    if (i == -15 || i == -14 || (i >= -11 && i <= -9) || (i >= 1 && i <= 7) || (i >= 15 && i <= 17))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                    }
+
+                    //row 7
+                    if (i == -15 || i == -14 || i == -11 || i == -10 || (i >= 14 && i <= 16))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                    }
+
+                    //row 8
+                    if (i == -15 || i == -14 || (i >= 9 && i <= 15))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                    }
+
+                    //row 9
+                    if (i == -15 || i == -14 || (i >= -7 && i <= -1) || (i >= 8 && i <= 14))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+                    }
+
+                    //row 10
+                    if ((i >= -15 && i <= -13) || (i >= -8 && i <= 0) || (i >= 7 && i <= 9))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -3, 0), pathTile);
+                    }
+
+                    //row 11
+                    if ((i >= -14 && i <= -12) || (i >= -9 && i <= -7) || (i >= -1 && i <= 1) || (i >= 6 && i <= 8))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    }
+
+                    //row 12
+                    if ((i >= -13 && i <= -8) || (i >= 0 && i <= 7))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -5, 0), pathTile);
+                    }
+
+                    //row 13
+                    if ((i >= -12 && i <= -9) || (i >= 1 && i <= 6))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -6, 0), pathTile);
+                    }
+                }
+
+                //spawner
+                tilemap.SetTile(new Vector3Int(-18, 6, 0), spawnerTile);
+
+                //base
+                tilemap.SetTile(new Vector3Int(-11, 0, 0), baseTile);
+
+                CreateMapStructures(new Vector3(-18, 6, 0), new Vector3(-11, 0, 0));
+                break;
+
+            //gemcraft map
+            case 9:
+                for (int i = -18; i <= 18; i++)
+                {
+                    //row 1
+                    if ((i >= -5 && i <= 3) || (i >= 10 && i <= 16))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 6, 0), pathTile);
+                    }
+
+                    //row 2
+                    if (i <= -8 || i == -5 || i == 3 || i == 10 || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 5, 0), pathTile);
+                    }
+
+                    //row 3
+                    if (i <= -18 || i == -14 || i == -8 || (i >= -5 && i <= -1) || i == 3 || (i >= 5 && i <= 10) || (i >= 16 && i <= 18))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 4, 0), pathTile);
+                    }
+
+                    //row 4
+                    if (i <= -18 || i == -14 || i == -8 || i == -4 || i == -1 || i == 5 || i == 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 3, 0), pathTile);
+                    }
+
+                    //row 5
+                    if (i == -18 || i == -14 || (i >= -10 && i <= -4) || (i >= -1 && i <= 5) || i == 18)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 2, 0), pathTile);
+                    }
+
+                    //row 6
+                    if (i == -14 || i == -10 || i == -4 || i == 1 || (i >= 9 && i <= 16))
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 1, 0), pathTile);
+                    }
+
+                    //row 7
+                    if ((i >= -16 && i <= -14) || i == -10 || i == -4 || i == 1 || i == 9 || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, 0, 0), pathTile);
+                    }
+
+                    //row 8
+                    if (i == -16 || i == -10 || (i >= -7 && i <= -4) || i == 1 || i == 9 || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -1, 0), pathTile);
+                    }
+
+                    //row 9
+                    if (i == -16 || (i >= -12 && i <= -10) || i == -7 || i == 1 || i == 9 || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -2, 0), pathTile);
+                    }
+
+                    //row 10
+                    if (i == -16 || i == -12 || i == -7 || i == 1 || (i >= 5 && i <= 13) || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -3, 0), pathTile);
+                    }
+
+                    //row 11
+                    if (i == -16 || i == -15 || i == -12 || (i >= -7 && i <= -2) || i == 1 || i == 5 || i == 13 || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -4, 0), pathTile);
+                    }
+
+                    //row 12
+                    if (i == -15 || i == -12 || i == -2 || (i >= 1 && i <= 5) || i == 13 || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -5, 0), pathTile);
+                    }
+
+                    //row 13
+                    if (i == -15 || i == -12 || i == -2 || (i >= 9 && i <= 13) || i == 16)
+                    {
+                        tilemap.SetTile(new Vector3Int(i, -6, 0), pathTile);
+                    }
+                }
+
+                //randomly select where to place structures
+                Vector3Int spawnerPos = new Vector3Int(-15, -6, 0);
+                Vector3Int basePos = new Vector3Int(18, 2, 0);
+                int randStructLayout = Random.Range(1, 19);
+
+                switch (randStructLayout)
+                {
+                    //spawner left 1, base right 1
+                    case 1:
+                        spawnerPos = new Vector3Int(-18, 2, 0);
+                        basePos = new Vector3Int(9, -6, 0);
+                        break;
+
+                    //spawner left 2, base right 1
+                    case 2:
+                        spawnerPos = new Vector3Int(-15, -6, 0);
+                        basePos = new Vector3Int(9, -6, 0);
+                        break;
+
+                    //spawner left 3, base right 1
+                    case 3:
+                        spawnerPos = new Vector3Int(-12, -6, 0);
+                        basePos = new Vector3Int(9, -6, 0);
+                        break;
+
+                    //spawner left 1, base right 2
+                    case 4:
+                        spawnerPos = new Vector3Int(-18, 2, 0);
+                        basePos = new Vector3Int(16, -6, 0);
+                        break;
+
+                    //spawner left 2, base right 2
+                    case 5:
+                        spawnerPos = new Vector3Int(-15, -6, 0);
+                        basePos = new Vector3Int(16, -6, 0);
+                        break;
+
+                    //spawner left 3, base right 2
+                    case 6:
+                        spawnerPos = new Vector3Int(-12, -6, 0);
+                        basePos = new Vector3Int(16, -6, 0);
+                        break;
+
+                    //spawner left 1, base right 3
+                    case 7:
+                        spawnerPos = new Vector3Int(-18, 2, 0);
+                        basePos = new Vector3Int(18, 2, 0);
+                        break;
+
+                    //spawner left 2, base right 3
+                    case 8:
+                        spawnerPos = new Vector3Int(-15, -6, 0);
+                        basePos = new Vector3Int(18, 2, 0);
+                        break;
+
+                    //spawner left 3, base right 3
+                    case 9:
+                        spawnerPos = new Vector3Int(-12, -6, 0);
+                        basePos = new Vector3Int(18, 2, 0);
+                        break;
+
+                    //spawner right 1, base left 1
+                    case 10:
+                        spawnerPos = new Vector3Int(9, -6, 0);
+                        basePos = new Vector3Int(-18, 2, 0);
+                        break;
+
+                    //spawner right 2, base left 1
+                    case 11:
+                        spawnerPos = new Vector3Int(9, -6, 0);
+                        basePos = new Vector3Int(-15, -6, 0);
+                        break;
+
+                    //spawner right 3, base left 1
+                    case 12:
+                        spawnerPos = new Vector3Int(9, -6, 0);
+                        basePos = new Vector3Int(-12, -6, 0);
+                        break;
+
+                    //spawner right 1, base left 2
+                    case 13:
+                        spawnerPos = new Vector3Int(16, -6, 0);
+                        basePos = new Vector3Int(-18, 2, 0);
+                        break;
+
+                    //spawner right 2, base left 2
+                    case 14:
+                        spawnerPos = new Vector3Int(16, -6, 0);
+                        basePos = new Vector3Int(-15, -6, 0);
+                        break;
+
+                    //spawner right 3, base left 2
+                    case 15:
+                        spawnerPos = new Vector3Int(16, -6, 0);
+                        basePos = new Vector3Int(-12, -6, 0);
+                        break;
+
+                    //spawner right 1, base left 3
+                    case 16:
+                        spawnerPos = new Vector3Int(18, 2, 0);
+                        basePos = new Vector3Int(-18, 2, 0);
+                        break;
+
+                    //spawner right 2, base left 3
+                    case 17:
+                        spawnerPos = new Vector3Int(18, 2, 0);
+                        basePos = new Vector3Int(-15, -6, 0);
+                        break;
+
+                    //spawner right 3, base left 3
+                    case 18:
+                        spawnerPos = new Vector3Int(18, 2, 0);
+                        basePos = new Vector3Int(-12, -6, 0);
+                        break;
+                }
+
+                //spawner
+                tilemap.SetTile(spawnerPos, spawnerTile);
+
+                //base
+                tilemap.SetTile(basePos, baseTile);
+
+                CreateMapStructures(spawnerPos, basePos);
+                break;
+        }
     }
 }

@@ -9,7 +9,7 @@ public class ChallengeManager : MonoBehaviour
     private Dictionary<string, bool> challengeDict;
 
     //save file
-    private string skillsFile = "saves\\skills.txt";
+    private string skillsFile = "saves\\skills.ldata";
     private StreamWriter writer = null;
     private StreamReader reader = null;
 
@@ -26,7 +26,7 @@ public class ChallengeManager : MonoBehaviour
     public List<EnemyAI> earthChallengeCounter { get; set; }
 
     //enemypedia found
-    private string enemypediaFile = "saves\\enemypedia.txt";
+    private string enemypediaFile = "saves\\enemypedia.ldata";
     public Transform enemypediaFoundParent;
     private Dictionary<string, bool> enemypediaDict;
     private Dictionary<string, Transform> enemypediaImages; // 0 = cur, 1 = knight, 2 = monk, 3 = assassin, 4 = paladin, 5 = armorer, 6 = succubus, 7 = warlock
@@ -37,7 +37,7 @@ public class ChallengeManager : MonoBehaviour
         //challenge variables
         challengeDict = new Dictionary<string, bool>();
 
-        ReadSkillsFromFile();
+        //ReadSkillsFromFile();
 
         challengeImages = new Dictionary<string, Transform>();
         challengeImagesInUse = new Queue<Transform>();
@@ -90,59 +90,12 @@ public class ChallengeManager : MonoBehaviour
                 {
                     moveDown = false;
 
-                    challengeImagesInUse.Dequeue().localPosition = Vector3.zero;
+                    challengeImagesInUse.Peek().localPosition = Vector3.zero;
+                    challengeImagesInUse.Dequeue().gameObject.SetActive(false);
                 }
             }
 
             challengeUITimer -= Time.deltaTime;
-        }
-
-        //order challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            SaveChallengeState("orderskill");
-        }
-
-        //lightning challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            TestChallengeUI("lightningskill");
-        }
-
-        //whimsical challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            TestChallengeUI("whimsicalskill");
-        }
-
-        //nature challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            TestChallengeUI("natureskill");
-        }
-
-        //earth challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            TestChallengeUI("earthskill");
-        }
-
-        //chaos challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            TestChallengeUI("chaosskill");
-        }
-
-        //fire challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            TestChallengeUI("fireskill");
-        }
-
-        //water challenge test
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            TestChallengeUI("waterskill");
         }
     }
 
@@ -281,6 +234,7 @@ public class ChallengeManager : MonoBehaviour
         }
 
         challengeUITimer += 4;
+        challengeImages[challengeName].gameObject.SetActive(true);
         challengeImagesInUse.Enqueue(challengeImages[challengeName]);
 
         challengeDict[challengeName] = true;
@@ -323,6 +277,7 @@ public class ChallengeManager : MonoBehaviour
         }
 
         challengeUITimer += 4;
+        enemypediaImages[enemy].gameObject.SetActive(true);
         challengeImagesInUse.Enqueue(enemypediaImages[enemy]);
 
         enemypediaDict[enemy] = true;
